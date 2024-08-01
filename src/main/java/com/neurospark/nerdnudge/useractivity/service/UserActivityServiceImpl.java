@@ -9,6 +9,7 @@ import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.utils.LRUCache;
 import jakarta.annotation.PostConstruct;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -71,28 +72,28 @@ public class UserActivityServiceImpl implements UserActivityService {
 
         currentDayArray.set(0, new JsonPrimitive(currentDayArray.get(0).getAsInt() + currentQuizflexQuotaUsed));
         dayQuotaObject.add(getDaystamp(), currentDayArray);
-        housekeepDayQuota(dayQuotaObject);
+        housekeepDayJsonObject(dayQuotaObject, nerdConfig.get("dayQuotaRetentionDays").getAsInt());
         userData.add("dayQuota", dayQuotaObject);
     }
 
-    private void housekeepDayQuota(JsonObject dayQuotaObject) {
-        int dayQuotaRetentionDays = nerdConfig.get("dayQuotaRetentionDays").getAsInt();
-        Set<Map.Entry <String ,JsonElement>> dailyQuotaKeys = dayQuotaObject.entrySet();
-        if(dailyQuotaKeys.size() <= dayQuotaRetentionDays)
+    private void housekeepDayJsonObject(JsonObject jsonObject, int retentionEntries) {
+        Set<Map.Entry <String ,JsonElement>> dailyQuotaKeys = jsonObject.entrySet();
+        if(dailyQuotaKeys.size() <= retentionEntries)
             return;
 
         TreeSet<String> sortedKeys = new TreeSet<>();
-        for (Map.Entry<String, JsonElement> entry : dayQuotaObject.entrySet()) {
+        for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
             sortedKeys.add(entry.getKey());
         }
 
-        while(dayQuotaObject.entrySet().size() > dayQuotaRetentionDays) {
+        while(jsonObject.entrySet().size() > retentionEntries) {
             String oldestKey = sortedKeys.pollFirst();
             if (oldestKey != null) {
-                dayQuotaObject.remove(oldestKey);
+                jsonObject.remove(oldestKey);
             }
         }
     }
+
     private String getDaystamp() {
         LocalDate date = LocalDate.now();
         int dayOfYear = date.getDayOfYear();
@@ -103,16 +104,97 @@ public class UserActivityServiceImpl implements UserActivityService {
     }
 
     private void updateUserSummary(JsonObject userData, UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
-        updateOverallUserSummary(userData, userQuizFlexSubmissionEntity);
-        updateLast30DaysUserSummary(userData, userQuizFlexSubmissionEntity);
+        CountsFromUserActivity counts = getCountsFromUserActivity(userQuizFlexSubmissionEntity);
+        updateOverallUserSummary(userData, counts);
+        updateLast30DaysUserSummary(userData, counts);
     }
 
-    private void updateOverallUserSummary(JsonObject userData, UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
-        
+    private CountsFromUserActivity getCountsFromUserActivity(UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
+        CountsFromUserActivity counts = new CountsFromUserActivity();
+        Map<String, Map<String, List<String>>> currentQuizflexes = userQuizFlexSubmissionEntity.getQuizflex();
+        for(String thisTopic: currentQuizflexes.keySet()) {
+            Map<String, List<String>> allQuizflexes = currentQuizflexes.get(thisTopic);
+            for(String questionId: allQuizflexes.keySet()) {
+                List<String> thisQuizflex = allQuizflexes.get(questionId);
+                counts.currentTotalCount ++;
+                if(thisQuizflex.get(1).equals("easy")) {
+                    counts.currentEasyCount ++;
+                    counts.currentEasyCorrect = thisQuizflex.get(2).equals("Y") ? counts.currentEasyCorrect + 1 : counts.currentEasyCorrect;
+                } else if(thisQuizflex.get(1).equals("medium")) {
+                    counts.currentMedCount ++;
+                    counts.currentMedCorrect = thisQuizflex.get(2).equals("Y") ? counts.currentMedCorrect + 1 : counts.currentMedCorrect;
+                } else {
+                    counts.currentHardCount ++;
+                    counts.currentHardCorrect = thisQuizflex.get(2).equals("Y") ? counts.currentHardCorrect + 1 : counts.currentHardCorrect;
+                }
+
+                counts.currentTotalCorrect = thisQuizflex.get(2).equals("Y") ? counts.currentTotalCorrect + 1 : counts.currentTotalCorrect;
+            }
+        }
+        return counts;
     }
 
-    private void updateLast30DaysUserSummary(JsonObject userData, UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
+    private void updateOverallUserSummary(JsonObject userData, CountsFromUserActivity counts) {
 
+        JsonElement summaryEle = userData.get("Summary");
+        JsonObject summaryObject = (summaryEle == null || summaryEle.isJsonNull()) ? new JsonObject() : summaryEle.getAsJsonObject();
+
+        JsonElement overallSummaryEle = summaryObject.get("overallSummary");
+        JsonObject overallSummaryObject = (overallSummaryEle == null || overallSummaryEle.isJsonNull()) ? new JsonObject() : overallSummaryEle.getAsJsonObject();
+
+        JsonArray totalArray = getUpdatedArray(overallSummaryObject.get("total"), counts.currentTotalCount, counts.currentTotalCorrect);
+        JsonArray easyArray = getUpdatedArray(overallSummaryObject.get("easy"), counts.currentEasyCount, counts.currentEasyCorrect);
+        JsonArray medArray = getUpdatedArray(overallSummaryObject.get("medium"), counts.currentMedCount, counts.currentMedCorrect);
+        JsonArray hardArray = getUpdatedArray(overallSummaryObject.get("hard"), counts.currentHardCount, counts.currentHardCorrect);
+
+        overallSummaryObject.add("total", totalArray);
+        overallSummaryObject.add("easy", easyArray);
+        overallSummaryObject.add("medium", medArray);
+        overallSummaryObject.add("hard", hardArray);
+
+        summaryObject.add("overallSummary", overallSummaryObject);
+        userData.add("Summary", summaryObject);
+    }
+
+    private JsonArray getUpdatedArray(JsonElement arrayElement, int totalCount, int correctCount) {
+        JsonArray totalArray = (arrayElement == null || arrayElement.isJsonNull()) ? new JsonArray() : arrayElement.getAsJsonArray();
+        JsonArray newArray = new JsonArray();
+
+        if(totalArray.size() > 0) {
+            newArray.add(new JsonPrimitive(totalArray.get(0).getAsInt() + totalCount));
+            newArray.add(new JsonPrimitive(totalArray.get(1).getAsInt() + correctCount));
+        } else {
+            newArray.add(new JsonPrimitive(totalCount));
+            newArray.add(new JsonPrimitive(correctCount));
+        }
+
+        return newArray;
+    }
+
+    private void updateLast30DaysUserSummary(JsonObject userData, CountsFromUserActivity counts) {
+        JsonElement summaryEle = userData.get("Summary");
+        JsonObject summaryObject = (summaryEle == null || summaryEle.isJsonNull()) ? new JsonObject() : summaryEle.getAsJsonObject();
+
+        JsonElement last30DaysEle = summaryObject.get("last30Days");
+        JsonObject last30DaysObject = (last30DaysEle == null || last30DaysEle.isJsonNull()) ? new JsonObject() : last30DaysEle.getAsJsonObject();
+
+        String currentDayStamp = getDaystamp();
+        JsonElement currentDayEle = last30DaysObject.get(currentDayStamp);
+        JsonObject currentDayObject = (currentDayEle == null || currentDayEle.isJsonNull()) ? new JsonObject() : currentDayEle.getAsJsonObject();
+
+        JsonArray easyArray = getUpdatedArray(currentDayObject.get("easy"), counts.currentEasyCount, counts.currentEasyCorrect);
+        JsonArray medArray = getUpdatedArray(currentDayObject.get("medium"), counts.currentMedCount, counts.currentMedCorrect);
+        JsonArray hardArray = getUpdatedArray(currentDayObject.get("hard"), counts.currentHardCount, counts.currentHardCorrect);
+
+        currentDayObject.add("easy", easyArray);
+        currentDayObject.add("medium", medArray);
+        currentDayObject.add("hard", hardArray);
+
+        last30DaysObject.add(currentDayStamp, currentDayObject);
+        housekeepDayJsonObject(last30DaysObject, 30);
+
+        summaryObject.add("last30Days", last30DaysObject);
+        userData.add("Summary", summaryObject);
     }
 
     private void updateTopicwiseSummary(JsonObject userData, UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
@@ -158,6 +240,19 @@ public class UserActivityServiceImpl implements UserActivityService {
             userData.addProperty("registrationDate", Instant.now().getEpochSecond());
         }
 
+        System.out.println("user data returned: " + userData);
         return userData;
     }
+}
+
+@Data
+class CountsFromUserActivity {
+    int currentTotalCount = 0;
+    int currentTotalCorrect = 0;
+    int currentEasyCount = 0;
+    int currentEasyCorrect = 0;
+    int currentMedCount = 0;
+    int currentMedCorrect = 0;
+    int currentHardCount = 0;
+    int currentHardCorrect = 0;
 }
