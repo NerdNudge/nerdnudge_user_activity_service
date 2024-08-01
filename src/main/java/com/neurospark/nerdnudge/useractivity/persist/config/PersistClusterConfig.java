@@ -1,6 +1,5 @@
 package com.neurospark.nerdnudge.useractivity.persist.config;
 
-import com.couchbase.client.java.Cluster;
 import com.neurospark.nerdnudge.couchbase.service.NerdPersistClient;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,13 +30,20 @@ public class PersistClusterConfig {
     @Value("${persist.config.collection}")
     private String persistConfigCollectionName;
 
+    /*@Bean
+    @Primary
+    public Cluster cluster() {
+        ClusterEnvironment env = ClusterEnvironment.builder().build();
+        return Cluster.connect(persistConnectionString, ClusterOptions.clusterOptions(persistUsername, persistPassword).environment(env));
+    }*/
+
     @Bean(name = "configPersist")
-    public NerdPersistClient configPersist(Cluster cluster) {
+    public NerdPersistClient configPersist() {
         return new NerdPersistClient(persistConnectionString, persistUsername, persistPassword, persistConfigBucketName, persistConfigScopeName, persistConfigCollectionName);
     }
 
     @Bean(name = "userProfilesPersist")
-    public NerdPersistClient userProfilesPersist(Cluster cluster) {
+    public NerdPersistClient userProfilesPersist() {
         return new NerdPersistClient(persistConnectionString, persistUsername, persistPassword, "users", "users", "userProfiles");
     }
 }

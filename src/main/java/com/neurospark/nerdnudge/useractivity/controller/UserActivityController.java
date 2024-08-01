@@ -24,6 +24,7 @@ public class UserActivityController {
     @PutMapping("/quizflexSubmission")
     public ApiResponse<String> updateUserQuizflexSubmission(@RequestBody UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
         long startTime = System.currentTimeMillis();
+        System.out.println("Data in request: " + userQuizFlexSubmissionEntity);
         userActivityService.updateUserQuizflexSubmission(userQuizFlexSubmissionEntity);
         long endTime = System.currentTimeMillis();
         return new ApiResponse<>(Constants.SUCCESS, "User activity updated successfully", Constants.SUCCESS, (endTime - startTime));
