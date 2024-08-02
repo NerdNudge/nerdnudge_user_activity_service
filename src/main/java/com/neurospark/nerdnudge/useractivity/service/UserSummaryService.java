@@ -19,10 +19,10 @@ public class UserSummaryService {
         JsonElement overallSummaryEle = summaryObject.get("overallSummary");
         JsonObject overallSummaryObject = (overallSummaryEle == null || overallSummaryEle.isJsonNull()) ? new JsonObject() : overallSummaryEle.getAsJsonObject();
 
-        JsonArray totalArray = Commons.getInstance().getUpdatedArray(overallSummaryObject.get("total"), counts.currentTotalCount, counts.currentTotalCorrect);
-        JsonArray easyArray = Commons.getInstance().getUpdatedArray(overallSummaryObject.get("easy"), counts.currentEasyCount, counts.currentEasyCorrect);
-        JsonArray medArray = Commons.getInstance().getUpdatedArray(overallSummaryObject.get("medium"), counts.currentMedCount, counts.currentMedCorrect);
-        JsonArray hardArray = Commons.getInstance().getUpdatedArray(overallSummaryObject.get("hard"), counts.currentHardCount, counts.currentHardCorrect);
+        JsonArray totalArray = Commons.getInstance().getUpdatedArray(overallSummaryObject.get("total"), counts.getCurrentTotalCount(), counts.getCurrentTotalCorrect());
+        JsonArray easyArray = Commons.getInstance().getUpdatedArray(overallSummaryObject.get("easy"), counts.getCurrentEasyCount(), counts.getCurrentEasyCorrect());
+        JsonArray medArray = Commons.getInstance().getUpdatedArray(overallSummaryObject.get("medium"), counts.getCurrentMedCount(), counts.getCurrentMedCorrect());
+        JsonArray hardArray = Commons.getInstance().getUpdatedArray(overallSummaryObject.get("hard"), counts.getCurrentHardCount(), counts.getCurrentHardCorrect());
 
         overallSummaryObject.add("total", totalArray);
         overallSummaryObject.add("easy", easyArray);
@@ -45,9 +45,9 @@ public class UserSummaryService {
         JsonElement currentDayEle = last30DaysObject.get(currentDayStamp);
         JsonObject currentDayObject = (currentDayEle == null || currentDayEle.isJsonNull()) ? new JsonObject() : currentDayEle.getAsJsonObject();
 
-        JsonArray easyArray = Commons.getInstance().getUpdatedArray(currentDayObject.get("easy"), counts.currentEasyCount, counts.currentEasyCorrect);
-        JsonArray medArray = Commons.getInstance().getUpdatedArray(currentDayObject.get("medium"), counts.currentMedCount, counts.currentMedCorrect);
-        JsonArray hardArray = Commons.getInstance().getUpdatedArray(currentDayObject.get("hard"), counts.currentHardCount, counts.currentHardCorrect);
+        JsonArray easyArray = Commons.getInstance().getUpdatedArray(currentDayObject.get("easy"), counts.getCurrentEasyCount(), counts.getCurrentEasyCorrect());
+        JsonArray medArray = Commons.getInstance().getUpdatedArray(currentDayObject.get("medium"), counts.getCurrentMedCount(), counts.getCurrentMedCorrect());
+        JsonArray hardArray = Commons.getInstance().getUpdatedArray(currentDayObject.get("hard"), counts.getCurrentHardCount(), counts.getCurrentHardCorrect());
 
         currentDayObject.add("easy", easyArray);
         currentDayObject.add("medium", medArray);

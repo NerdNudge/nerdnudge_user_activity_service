@@ -9,14 +9,14 @@ import java.util.Map;
 
 @Data
 public class UserActivityCounts {
-    int currentTotalCount = 0;
-    int currentTotalCorrect = 0;
-    int currentEasyCount = 0;
-    int currentEasyCorrect = 0;
-    int currentMedCount = 0;
-    int currentMedCorrect = 0;
-    int currentHardCount = 0;
-    int currentHardCorrect = 0;
+    private int currentTotalCount = 0;
+    private int currentTotalCorrect = 0;
+    private int currentEasyCount = 0;
+    private int currentEasyCorrect = 0;
+    private int currentMedCount = 0;
+    private int currentMedCorrect = 0;
+    private int currentHardCount = 0;
+    private int currentHardCorrect = 0;
 
     Map<String, Map<String, int[]>> subtopicsCounts = new HashMap<>();
     Map<String, int[]> topicsSummaryCounts = new HashMap<>();

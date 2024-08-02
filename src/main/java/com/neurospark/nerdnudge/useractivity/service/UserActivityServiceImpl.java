@@ -40,7 +40,7 @@ public class UserActivityServiceImpl implements UserActivityService {
         new DayQuotaService().updateDayQuota(userData, userQuizFlexSubmissionEntity, nerdConfig.get("dayQuotaRetentionDays").getAsInt());
         new UserSummaryService().updateUserSummary(userData, counts);
         new TopicwiseSummaryService().updateTopicwiseSummary(userData, counts);
-        new DayStatsService().updateDayStats(userData, userQuizFlexSubmissionEntity);
+        new DayStatsService().updateDayStats(userData, counts);
         new StreaksService().updateStreak(userData, userQuizFlexSubmissionEntity);
 
         saveUserProfileDocument(userQuizFlexSubmissionEntity.getUserId(), userData);
