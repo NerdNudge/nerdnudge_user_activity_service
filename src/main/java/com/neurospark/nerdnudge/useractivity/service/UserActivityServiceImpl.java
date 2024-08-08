@@ -50,7 +50,11 @@ public class UserActivityServiceImpl implements UserActivityService {
 
     @Override
     public void updateUserShotsSubmission(UserShotsSubmissionEntity userShotsSubmissionEntity) {
-
+        JsonObject userData = getUserProfileDocument(userShotsSubmissionEntity.getUserId());
+        new DayQuotaService().updateDayQuota(userData, userShotsSubmissionEntity, nerdConfig.get("dayQuotaRetentionDays").getAsInt());
+        saveUserProfileDocument(userShotsSubmissionEntity.getUserId(), userData);
+        System.out.println("Re-fetch: " + userProfilesPersist.get(userShotsSubmissionEntity.getUserId()));
+        System.out.println("from cache: " + getUserProfileDocument(userShotsSubmissionEntity.getUserId()));
     }
 
     private void saveUserProfileDocument(String userId, JsonObject userDocument) {
