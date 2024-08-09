@@ -37,7 +37,7 @@ public class UserActivityServiceImpl implements UserActivityService {
         JsonObject userData = getUserProfileDocument(userQuizFlexSubmissionEntity.getUserId());
         UserActivityCounts counts = new UserActivityCounts(userQuizFlexSubmissionEntity);
 
-        new DayQuotaService().updateDayQuota(userData, userQuizFlexSubmissionEntity, nerdConfig.get("dayQuotaRetentionDays").getAsInt());
+        new DayQuotaService().updateDayQuota(userData, userQuizFlexSubmissionEntity, nerdConfig, userProfilesPersist);
         new UserSummaryService().updateUserSummary(userData, counts);
         new TopicwiseSummaryService().updateTopicwiseSummary(userData, counts);
         new DayStatsService().updateDayStats(userData, counts);
@@ -51,7 +51,7 @@ public class UserActivityServiceImpl implements UserActivityService {
     @Override
     public void updateUserShotsSubmission(UserShotsSubmissionEntity userShotsSubmissionEntity) {
         JsonObject userData = getUserProfileDocument(userShotsSubmissionEntity.getUserId());
-        new DayQuotaService().updateDayQuota(userData, userShotsSubmissionEntity, nerdConfig.get("dayQuotaRetentionDays").getAsInt());
+        new DayQuotaService().updateDayQuota(userData, userShotsSubmissionEntity, nerdConfig.get("dayQuotaRetentionDays").getAsInt(), userProfilesPersist);
         saveUserProfileDocument(userShotsSubmissionEntity.getUserId(), userData);
         System.out.println("Re-fetch: " + userProfilesPersist.get(userShotsSubmissionEntity.getUserId()));
         System.out.println("from cache: " + getUserProfileDocument(userShotsSubmissionEntity.getUserId()));
