@@ -14,6 +14,6 @@ public class UserShotsSubmissionEntity {
     Map<String, Map<String, Integer>> shots;
     List<String> likes;
     List<String> dislikes;
-    List<String> favorites;
+    Map<String, Map<String, List<String>>> favorites;
     List<String> shares;
 }

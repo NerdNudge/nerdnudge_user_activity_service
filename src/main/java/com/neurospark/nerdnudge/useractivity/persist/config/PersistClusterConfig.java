@@ -46,4 +46,9 @@ public class PersistClusterConfig {
     public NerdPersistClient userProfilesPersist() {
         return new NerdPersistClient(persistConnectionString, persistUsername, persistPassword, "users", "users", "userProfiles");
     }
+
+    @Bean(name = "shotsStatsPersist")
+    public NerdPersistClient shotsStatsPersist() {
+        return new NerdPersistClient(persistConnectionString, persistUsername, persistPassword, "content", "shotstats", "stats");
+    }
 }

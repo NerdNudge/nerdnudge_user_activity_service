@@ -24,6 +24,9 @@ public class UserActivityCounts {
     UserActivityCounts(UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
         System.out.println("Updating counts from user activity now.");
         Map<String, Map<String, List<String>>> currentQuizflexes = userQuizFlexSubmissionEntity.getQuizflex();
+        if(currentQuizflexes == null)
+            return;
+
         for (String thisTopic : currentQuizflexes.keySet()) {
             Map<String, List<String>> allQuizflexes = currentQuizflexes.get(thisTopic);
             int[] topicSummaryCounts = getTopicsSummaryCounts().getOrDefault(thisTopic, new int[3]);

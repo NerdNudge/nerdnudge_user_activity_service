@@ -14,6 +14,6 @@ public class UserQuizFlexSubmissionEntity {
     Map<String, Map<String, List<String>>> quizflex;
     List<String> likes;
     List<String> dislikes;
-    List<String> favorites;
+    Map<String, Map<String, List<String>>> favorites;
     List<String> shares;
 }

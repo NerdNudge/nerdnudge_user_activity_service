@@ -9,7 +9,6 @@ import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.utils.Commons;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.List;
 import java.util.Map;
@@ -27,6 +26,9 @@ public class DayQuotaService {
         this.nerdConfig = nerdConfig;
         int quotaRetentionDays = nerdConfig.get("dayQuotaRetentionDays").getAsInt();
         Map<String, Map<String, List<String>>> currentQuizflexes = userQuizFlexSubmissionEntity.getQuizflex();
+        if(currentQuizflexes == null)
+            return;
+
         int currentQuizflexQuotaUsed = 0;
         for(String thisTopic: currentQuizflexes.keySet()) {
             Map<String, List<String>> allQuizflexes = currentQuizflexes.get(thisTopic);
@@ -72,8 +74,10 @@ public class DayQuotaService {
         userProfilesPersist.incr(currentDay + "_user_counts", 1, (int) (numRetentionDays * numSecsPerDay));
     }
 
-    public void updateDayQuota(JsonObject userData, UserShotsSubmissionEntity userShotsSubmissionEntity, int quotaRetentionDays, NerdPersistClient userProfilesPersist) {
+    public void updateDayQuota(JsonObject userData, UserShotsSubmissionEntity userShotsSubmissionEntity, JsonObject nerdConfig, NerdPersistClient userProfilesPersist) {
+        System.out.println("Updating day quota for shots.");
         this.userProfilesPersist = userProfilesPersist;
+        this.nerdConfig = nerdConfig;
         Map<String, Map<String, Integer>> currentShots = userShotsSubmissionEntity.getShots();
         int currentShotsQuotaUsed = 0;
         for(String thisTopic: currentShots.keySet()) {
@@ -86,7 +90,7 @@ public class DayQuotaService {
         JsonArray currentDayArray = getCurrentDayArray(dayQuotaObject);
         currentDayArray.set(1, new JsonPrimitive(currentDayArray.get(1).getAsInt() + currentShotsQuotaUsed));
 
-        Commons.getInstance().housekeepDayJsonObject(dayQuotaObject, quotaRetentionDays);
+        Commons.getInstance().housekeepDayJsonObject(dayQuotaObject, nerdConfig.get("dayQuotaRetentionDays").getAsInt());
         userData.add("dayQuota", dayQuotaObject);
     }
 }

@@ -14,8 +14,10 @@ public class StreaksService {
         int current = streakObject.has("current") ? streakObject.get("current").getAsInt() : 0;
         int highest = streakObject.has("highest") ? streakObject.get("highest").getAsInt() : 0;
 
-
         Map<String, Map<String, List<String>>> currentQuizflexes = userQuizFlexSubmissionEntity.getQuizflex();
+        if(currentQuizflexes == null)
+            return;
+
         for (String thisTopic : currentQuizflexes.keySet()) {
             Map<String, List<String>> allQuizflexes = currentQuizflexes.get(thisTopic);
             for (String questionId : allQuizflexes.keySet()) {

@@ -45,6 +45,12 @@ public class Commons {
         }
     }
 
+    public void housekeepJsonArray(JsonArray jsonArray, int retentionEntries) {
+        while(jsonArray.size() > retentionEntries) {
+            jsonArray.remove(0);
+        }
+    }
+
     public JsonArray getUpdatedArray(JsonElement arrayElement, int totalCount, int correctCount) {
         JsonArray totalArray = (arrayElement == null || arrayElement.isJsonNull()) ? new JsonArray() : arrayElement.getAsJsonArray();
         JsonArray newArray = new JsonArray();
