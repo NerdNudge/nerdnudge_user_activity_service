@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.neurospark.nerdnudge.couchbase.service.NerdPersistClient;
+import com.neurospark.nerdnudge.useractivity.dto.UserFavoritesSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.utils.Commons;
@@ -35,6 +36,15 @@ public class CountersService {
         updateCounter(userShotsSubmissionEntity.getDislikes(), DISLIKES_SUFFIX);
         updateCounter(userShotsSubmissionEntity.getShares(), SHARES_SUFFIX);
         updateFavorites(userData, userShotsSubmissionEntity.getFavorites());
+    }
+
+    public void updateCounters(JsonObject userData, UserFavoritesSubmissionEntity userFavoritesSubmissionEntity, NerdPersistClient shotsStatsPersist) {
+        this.shotsStatsPersist = shotsStatsPersist;
+        System.out.println("updating stats now for shots..");
+        updateCounter(userFavoritesSubmissionEntity.getLikes(), LIKES_SUFFIX);
+        updateCounter(userFavoritesSubmissionEntity.getDislikes(), DISLIKES_SUFFIX);
+        updateCounter(userFavoritesSubmissionEntity.getShares(), SHARES_SUFFIX);
+        deleteFavorites(userData, userFavoritesSubmissionEntity.getFavoritesToDelete());
     }
 
     private void updateCounter(List<String> counterArray, String suffix) {
@@ -87,11 +97,65 @@ public class CountersService {
                         thisSubtopicUserDataArray.add(currentQuizFlexId);
                     }
                 }
-                Commons.getInstance().housekeepJsonArray(thisSubtopicUserDataArray, 30);
+                Commons.getInstance().housekeepJsonArray(thisSubtopicUserDataArray, 20);
             }
         }
 
-        Commons.getInstance().housekeepJsonArray(recentArray, 30);
+        Commons.getInstance().housekeepJsonArray(recentArray, 20);
+    }
+
+    private void deleteFavorites(JsonObject userData, Map<String, Map<String, List<String>>> favoritesToDelete) {
+        if(favoritesToDelete == null)
+            return;
+
+        JsonElement favoritesEle = userData.get("favorites");
+        if(favoritesEle == null || favoritesEle.isJsonNull())
+            return;
+
+        JsonObject favoritesObject = favoritesEle.getAsJsonObject();
+
+        JsonElement recentEle = favoritesObject.get("recent");
+        if(recentEle == null || recentEle.isJsonNull())
+            return;
+
+        JsonArray recentArray = recentEle.getAsJsonArray();
+
+        JsonElement topicWiseEle = favoritesObject.get("topicwise");
+        if(topicWiseEle == null || topicWiseEle.isJsonNull())
+            return;
+
+        JsonObject topicWiseUserDataObject = topicWiseEle.getAsJsonObject();
+
+        for(String topic: favoritesToDelete.keySet()) {
+            Map<String, List<String>> subtopicFavs = favoritesToDelete.get(topic);
+
+            JsonElement thisTopicUserDataEle = topicWiseUserDataObject.get(topic);
+            if(thisTopicUserDataEle == null || thisTopicUserDataEle.isJsonNull())
+                continue;
+
+            JsonObject thisTopicUserDataObject = thisTopicUserDataEle.getAsJsonObject();
+            for(String subtopic: subtopicFavs.keySet()) {
+                JsonElement thisSubtopicUserDataEle = thisTopicUserDataObject.get(subtopic);
+                if(thisSubtopicUserDataEle == null || thisSubtopicUserDataEle.isJsonNull())
+                    continue;
+
+                JsonArray thisSubtopicUserDataArray = thisSubtopicUserDataEle.getAsJsonArray();
+
+                List<String> quizFlexIds = subtopicFavs.get(subtopic);
+                for(int i = 0; i < quizFlexIds.size(); i ++) {
+                    String currentQuizFlexId = quizFlexIds.get(i);
+                    for(int j = 0; j < recentArray.size(); j ++) {
+                        if(recentArray.get(j).getAsString().equals(currentQuizFlexId))
+                            recentArray.remove(j);
+                    }
+
+                    for(int j = 0; j < thisSubtopicUserDataArray.size(); j ++) {
+                        if(thisSubtopicUserDataArray.get(j).getAsString().equals(currentQuizFlexId))
+                            thisSubtopicUserDataArray.remove(j);
+                    }
+                }
+            }
+        }
     }
 
     private boolean arrayContains(JsonArray array, String value) {

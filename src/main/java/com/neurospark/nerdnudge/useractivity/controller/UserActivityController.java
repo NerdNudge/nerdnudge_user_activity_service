@@ -1,5 +1,6 @@
 package com.neurospark.nerdnudge.useractivity.controller;
 
+import com.neurospark.nerdnudge.useractivity.dto.UserFavoritesSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.response.ApiResponse;
@@ -33,7 +34,17 @@ public class UserActivityController {
     @PutMapping("/shotsSubmission")
     public ApiResponse<String> updateUserShotsSubmission(@RequestBody UserShotsSubmissionEntity userShotsSubmissionEntity) {
         long startTime = System.currentTimeMillis();
+        System.out.println("Request: " + userShotsSubmissionEntity);
         userActivityService.updateUserShotsSubmission(userShotsSubmissionEntity);
+        long endTime = System.currentTimeMillis();
+        return new ApiResponse<>(Constants.SUCCESS, "User activity updated successfully", Constants.SUCCESS, (endTime - startTime));
+    }
+
+    @PutMapping("/favoritesSubmission")
+    public ApiResponse<String> updateUserFavoritesSubmission(@RequestBody UserFavoritesSubmissionEntity userFavoritesSubmissionEntity) {
+        long startTime = System.currentTimeMillis();
+        System.out.println("Request: " + userFavoritesSubmissionEntity);
+        userActivityService.updateUserFavoritesSubmission(userFavoritesSubmissionEntity);
         long endTime = System.currentTimeMillis();
         return new ApiResponse<>(Constants.SUCCESS, "User activity updated successfully", Constants.SUCCESS, (endTime - startTime));
     }

@@ -2,6 +2,7 @@ package com.neurospark.nerdnudge.useractivity.service;
 
 import com.google.gson.JsonObject;
 import com.neurospark.nerdnudge.couchbase.service.NerdPersistClient;
+import com.neurospark.nerdnudge.useractivity.dto.UserFavoritesSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.utils.Commons;
@@ -60,6 +61,15 @@ public class UserActivityServiceImpl implements UserActivityService {
         saveUserProfileDocument(userShotsSubmissionEntity.getUserId(), userData);
         System.out.println("Re-fetch: " + userProfilesPersist.get(userShotsSubmissionEntity.getUserId()));
         System.out.println("from cache: " + getUserProfileDocument(userShotsSubmissionEntity.getUserId()));
+    }
+
+    @Override
+    public void updateUserFavoritesSubmission(UserFavoritesSubmissionEntity userFavoritesSubmissionEntity) {
+        JsonObject userData = getUserProfileDocument(userFavoritesSubmissionEntity.getUserId());
+        new CountersService().updateCounters(userData, userFavoritesSubmissionEntity, shotsStatsPersist);
+        saveUserProfileDocument(userFavoritesSubmissionEntity.getUserId(), userData);
+        System.out.println("Re-fetch: " + userProfilesPersist.get(userFavoritesSubmissionEntity.getUserId()));
+        System.out.println("from cache: " + getUserProfileDocument(userFavoritesSubmissionEntity.getUserId()));
     }
 
     private void saveUserProfileDocument(String userId, JsonObject userDocument) {
