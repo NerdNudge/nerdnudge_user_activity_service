@@ -20,6 +20,7 @@ public class UserActivityCounts {
 
     Map<String, Map<String, int[]>> subtopicsCounts = new HashMap<>();
     Map<String, int[]> topicsSummaryCounts = new HashMap<>();
+    Map<String, int[]> topicsCorrectnessCounts = new HashMap<>();
 
     UserActivityCounts(UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
         System.out.println("Updating counts from user activity now.");
@@ -30,6 +31,7 @@ public class UserActivityCounts {
         for (String thisTopic : currentQuizflexes.keySet()) {
             Map<String, List<String>> allQuizflexes = currentQuizflexes.get(thisTopic);
             int[] topicSummaryCounts = getTopicsSummaryCounts().getOrDefault(thisTopic, new int[3]);
+            int[] topicCorrectnessCountsArray = getTopicsCorrectnessCounts().getOrDefault(thisTopic, new int[2]);
             for (String questionId : allQuizflexes.keySet()) {
                 List<String> thisQuizflex = allQuizflexes.get(questionId);
                 currentTotalCount++;
@@ -37,17 +39,19 @@ public class UserActivityCounts {
                 int[] subtopicsCounts = thisTopicsSubtopic.getOrDefault(thisQuizflex.get(0), new int[2]);
                 subtopicsCounts[0]++;
                 subtopicsCounts[1] = thisQuizflex.get(2).equals("Y") ? subtopicsCounts[1] + 1 : subtopicsCounts[1];
+                topicCorrectnessCountsArray[0] ++;
+                topicCorrectnessCountsArray[1] = thisQuizflex.get(2).equals("Y") ? topicCorrectnessCountsArray[1] + 1 : topicCorrectnessCountsArray[1];
                 if (thisQuizflex.get(1).equals("easy")) {
-                    topicSummaryCounts[0]++;
+                    topicSummaryCounts[0] ++;
                     currentEasyCount++;
                     currentEasyCorrect = thisQuizflex.get(2).equals("Y") ? currentEasyCorrect + 1 : currentEasyCorrect;
                 } else if (thisQuizflex.get(1).equals("medium")) {
-                    topicSummaryCounts[1]++;
+                    topicSummaryCounts[1] ++;
                     currentMedCount++;
                     currentMedCorrect = thisQuizflex.get(2).equals("Y") ? currentMedCorrect + 1 : currentMedCorrect;
                 } else {
-                    topicSummaryCounts[2]++;
-                    currentHardCount++;
+                    topicSummaryCounts[2] ++;
+                    currentHardCount ++;
                     currentHardCorrect = thisQuizflex.get(2).equals("Y") ? currentHardCorrect + 1 : currentHardCorrect;
                 }
 
@@ -55,6 +59,7 @@ public class UserActivityCounts {
                 thisTopicsSubtopic.put(thisQuizflex.get(0), subtopicsCounts);
                 getSubtopicsCounts().put(thisTopic, thisTopicsSubtopic);
             }
+            getTopicsCorrectnessCounts().put(thisTopic, topicCorrectnessCountsArray);
             getTopicsSummaryCounts().put(thisTopic, topicSummaryCounts);
         }
         System.out.println("Counts: ------------ " + this);

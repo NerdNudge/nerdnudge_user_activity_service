@@ -4,21 +4,22 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.neurospark.nerdnudge.couchbase.service.NerdPersistClient;
 import com.neurospark.nerdnudge.useractivity.utils.Commons;
 
 import java.util.Map;
 
 public class TopicwiseSummaryService {
-    public void updateTopicwiseSummary(JsonObject userData, UserActivityCounts counts) {
+    public void updateTopicwiseSummary(JsonObject userData, UserActivityCounts counts, NerdPersistClient shotsStatsPersist) {
         JsonElement topicwiseEle = userData.get("topicwise");
         JsonObject topicwiseObject = (topicwiseEle == null || topicwiseEle.isJsonNull()) ? new JsonObject() : topicwiseEle.getAsJsonObject();
         userData.add("topicwise", topicwiseObject);
 
-        updateTopicwiseOverallSummary(topicwiseObject, counts);
+        updateTopicwiseOverallSummary(topicwiseObject, counts, shotsStatsPersist);
         updateTopicwiseLast30DaysSummary(topicwiseObject, counts);
     }
 
-    private void updateTopicwiseOverallSummary(JsonObject topicwiseObject, UserActivityCounts counts) {
+    private void updateTopicwiseOverallSummary(JsonObject topicwiseObject, UserActivityCounts counts, NerdPersistClient shotsStatsPersist) {
         try {
             System.out.println("Updating topicwise summary now.");
             JsonElement topicwiseOverallEle = topicwiseObject.get("overall");
@@ -26,9 +27,18 @@ public class TopicwiseSummaryService {
             topicwiseObject.add("overall", topicwiseOverallObject);
 
             Map<String, int[]> topicSummaryCounts = counts.getTopicsSummaryCounts();
+            Map<String, int[]> topicsCorrectCounts = counts.getTopicsCorrectnessCounts();
             for (String topic : topicSummaryCounts.keySet()) {
                 JsonElement thisTopicDetailsFromUserDataEle = topicwiseOverallObject.get(topic);
-                JsonObject thisTopicDetailsFromUserDataObject = (thisTopicDetailsFromUserDataEle == null || thisTopicDetailsFromUserDataEle.isJsonNull()) ? new JsonObject() : thisTopicDetailsFromUserDataEle.getAsJsonObject();
+                JsonObject thisTopicDetailsFromUserDataObject = null;
+                if(thisTopicDetailsFromUserDataEle == null || thisTopicDetailsFromUserDataEle.isJsonNull()) {
+                    thisTopicDetailsFromUserDataObject = new JsonObject();
+                    shotsStatsPersist.incr(topic + "_user_count", 1);
+                }
+                else {
+                    thisTopicDetailsFromUserDataObject = thisTopicDetailsFromUserDataEle.getAsJsonObject();
+                }
+
                 topicwiseOverallObject.add(topic, thisTopicDetailsFromUserDataObject);
 
                 JsonElement summaryArrayEle = thisTopicDetailsFromUserDataObject.get("summary");
@@ -58,6 +68,23 @@ public class TopicwiseSummaryService {
 
                     subtopicsObject.add(subtopic, thisSubtopicUpdatedArray);
                 }
+
+                //Correct counts for topics:
+                JsonElement topicsCorrectArrayEle = thisTopicDetailsFromUserDataObject.get("correct");
+                JsonArray topicsCorrectArray = (topicsCorrectArrayEle == null || topicsCorrectArrayEle.isJsonNull()) ? new JsonArray() : topicsCorrectArrayEle.getAsJsonArray();
+                thisTopicDetailsFromUserDataObject.add("correct", topicsCorrectArray);
+
+                int[] thisTopicCurrentCounts = topicsCorrectCounts.get(topic);
+                if(topicsCorrectArray.size() > 0) {
+                    topicsCorrectArray.set(0, new JsonPrimitive(topicsCorrectArray.get(0).getAsInt() + thisTopicCurrentCounts[0]));
+                    topicsCorrectArray.set(1, new JsonPrimitive(topicsCorrectArray.get(1).getAsInt() + thisTopicCurrentCounts[1]));
+                }
+                else {
+                    topicsCorrectArray.add(new JsonPrimitive(thisTopicCurrentCounts[0]));
+                    topicsCorrectArray.add(new JsonPrimitive(thisTopicCurrentCounts[1]));
+                }
+
+                thisTopicDetailsFromUserDataObject.addProperty("lastTaken", System.currentTimeMillis());
             }
         }
         catch(Exception ex) {
