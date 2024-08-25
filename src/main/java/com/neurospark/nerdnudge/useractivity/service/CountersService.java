@@ -89,11 +89,11 @@ public class CountersService {
                     String currentQuizFlexId = quizFlexIds.get(i);
                     shotsStatsPersist.incr(currentQuizFlexId + FAVS_SUFFIX, 1);
 
-                    if(! arrayContains(recentArray, currentQuizFlexId)) {
+                    if(! Commons.getInstance().arrayContains(recentArray, currentQuizFlexId)) {
                         recentArray.add(currentQuizFlexId);
                     }
 
-                    if(! arrayContains(thisSubtopicUserDataArray, currentQuizFlexId)) {
+                    if(! Commons.getInstance().arrayContains(thisSubtopicUserDataArray, currentQuizFlexId)) {
                         thisSubtopicUserDataArray.add(currentQuizFlexId);
                     }
                 }
@@ -105,65 +105,56 @@ public class CountersService {
     }
 
     private void deleteFavorites(JsonObject userData, Map<String, Map<String, List<String>>> favoritesToDelete) {
-        if(favoritesToDelete == null)
+        if (favoritesToDelete == null)
             return;
 
         JsonElement favoritesEle = userData.get("favorites");
-        if(favoritesEle == null || favoritesEle.isJsonNull())
+        if (favoritesEle == null || favoritesEle.isJsonNull())
             return;
 
         JsonObject favoritesObject = favoritesEle.getAsJsonObject();
 
         JsonElement recentEle = favoritesObject.get("recent");
-        if(recentEle == null || recentEle.isJsonNull())
+        if (recentEle == null || recentEle.isJsonNull())
             return;
 
         JsonArray recentArray = recentEle.getAsJsonArray();
 
         JsonElement topicWiseEle = favoritesObject.get("topicwise");
-        if(topicWiseEle == null || topicWiseEle.isJsonNull())
+        if (topicWiseEle == null || topicWiseEle.isJsonNull())
             return;
 
         JsonObject topicWiseUserDataObject = topicWiseEle.getAsJsonObject();
 
-        for(String topic: favoritesToDelete.keySet()) {
+        for (String topic : favoritesToDelete.keySet()) {
             Map<String, List<String>> subtopicFavs = favoritesToDelete.get(topic);
 
             JsonElement thisTopicUserDataEle = topicWiseUserDataObject.get(topic);
-            if(thisTopicUserDataEle == null || thisTopicUserDataEle.isJsonNull())
+            if (thisTopicUserDataEle == null || thisTopicUserDataEle.isJsonNull())
                 continue;
 
             JsonObject thisTopicUserDataObject = thisTopicUserDataEle.getAsJsonObject();
-            for(String subtopic: subtopicFavs.keySet()) {
+            for (String subtopic : subtopicFavs.keySet()) {
                 JsonElement thisSubtopicUserDataEle = thisTopicUserDataObject.get(subtopic);
-                if(thisSubtopicUserDataEle == null || thisSubtopicUserDataEle.isJsonNull())
+                if (thisSubtopicUserDataEle == null || thisSubtopicUserDataEle.isJsonNull())
                     continue;
 
                 JsonArray thisSubtopicUserDataArray = thisSubtopicUserDataEle.getAsJsonArray();
 
                 List<String> quizFlexIds = subtopicFavs.get(subtopic);
-                for(int i = 0; i < quizFlexIds.size(); i ++) {
+                for (int i = 0; i < quizFlexIds.size(); i++) {
                     String currentQuizFlexId = quizFlexIds.get(i);
-                    for(int j = 0; j < recentArray.size(); j ++) {
-                        if(recentArray.get(j).getAsString().equals(currentQuizFlexId))
+                    for (int j = 0; j < recentArray.size(); j++) {
+                        if (recentArray.get(j).getAsString().equals(currentQuizFlexId))
                             recentArray.remove(j);
                     }
 
-                    for(int j = 0; j < thisSubtopicUserDataArray.size(); j ++) {
-                        if(thisSubtopicUserDataArray.get(j).getAsString().equals(currentQuizFlexId))
+                    for (int j = 0; j < thisSubtopicUserDataArray.size(); j++) {
+                        if (thisSubtopicUserDataArray.get(j).getAsString().equals(currentQuizFlexId))
                             thisSubtopicUserDataArray.remove(j);
                     }
                 }
             }
         }
-    }
-
-    private boolean arrayContains(JsonArray array, String value) {
-        for (JsonElement element : array) {
-            if (element.getAsString().equals(value)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

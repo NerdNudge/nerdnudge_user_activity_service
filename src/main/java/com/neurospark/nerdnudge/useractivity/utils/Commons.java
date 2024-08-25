@@ -74,4 +74,13 @@ public class Commons {
         String yearStr = String.format("%02d", year);
         return dayOfYearStr + yearStr;
     }
+
+    public boolean arrayContains(JsonArray array, String value) {
+        for (JsonElement element : array) {
+            if (element.getAsString().equals(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

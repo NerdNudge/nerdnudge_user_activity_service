@@ -1,7 +1,11 @@
 package com.neurospark.nerdnudge.useractivity.service;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.neurospark.nerdnudge.couchbase.service.NerdPersistClient;
+import com.neurospark.nerdnudge.useractivity.dto.UserFavoriteQuoteEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserFavoritesSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
@@ -70,6 +74,24 @@ public class UserActivityServiceImpl implements UserActivityService {
         saveUserProfileDocument(userFavoritesSubmissionEntity.getUserId(), userData);
         System.out.println("Re-fetch: " + userProfilesPersist.get(userFavoritesSubmissionEntity.getUserId()));
         System.out.println("from cache: " + getUserProfileDocument(userFavoritesSubmissionEntity.getUserId()));
+    }
+
+    @Override
+    public void updateUserFavoriteQuoteSubmission(UserFavoriteQuoteEntity userFavoriteQuoteEntity) {
+        JsonObject userData = getUserProfileDocument(userFavoriteQuoteEntity.getUserId());
+        JsonElement favoritesEle = userData.get("favorites");
+        JsonObject favoritesObject = (favoritesEle == null || favoritesEle.isJsonNull()) ? new JsonObject() : favoritesEle.getAsJsonObject();
+        userData.add("favorites", favoritesObject);
+
+        JsonElement favoriteQuotesEle = favoritesObject.get("quotes");
+        JsonArray favoriteQuotesArray = (favoriteQuotesEle == null || favoriteQuotesEle.isJsonNull()) ? new JsonArray() : favoriteQuotesEle.getAsJsonArray();
+        favoritesObject.add("quotes", favoriteQuotesArray);
+
+        if(! Commons.getInstance().arrayContains(favoriteQuotesArray, userFavoriteQuoteEntity.getQuoteId())) {
+            favoriteQuotesArray.add(new JsonPrimitive(userFavoriteQuoteEntity.getQuoteId()));
+        }
+        Commons.getInstance().housekeepJsonArray(favoriteQuotesArray, 20);
+        saveUserProfileDocument(userFavoriteQuoteEntity.getUserId(), userData);
     }
 
     private void saveUserProfileDocument(String userId, JsonObject userDocument) {

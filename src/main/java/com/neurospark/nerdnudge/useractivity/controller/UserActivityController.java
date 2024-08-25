@@ -1,5 +1,6 @@
 package com.neurospark.nerdnudge.useractivity.controller;
 
+import com.neurospark.nerdnudge.useractivity.dto.UserFavoriteQuoteEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserFavoritesSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
@@ -8,10 +9,7 @@ import com.neurospark.nerdnudge.useractivity.service.UserActivityService;
 import com.neurospark.nerdnudge.useractivity.utils.Constants;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.http.HttpRequest;
 
@@ -47,5 +45,14 @@ public class UserActivityController {
         userActivityService.updateUserFavoritesSubmission(userFavoritesSubmissionEntity);
         long endTime = System.currentTimeMillis();
         return new ApiResponse<>(Constants.SUCCESS, "User activity updated successfully", Constants.SUCCESS, (endTime - startTime));
+    }
+
+    @PutMapping("/favoriteQuoteSubmission")
+    public ApiResponse<String> updateUserFavoriteQuoteSubmission(@RequestBody UserFavoriteQuoteEntity userFavoriteQuoteEntity) {
+        System.out.println("Adding user favorite quote for user: " + userFavoriteQuoteEntity);
+        long startTime = System.currentTimeMillis();
+        userActivityService.updateUserFavoriteQuoteSubmission(userFavoriteQuoteEntity);
+        long endTime = System.currentTimeMillis();
+        return new ApiResponse<>(Constants.SUCCESS, "User Favorite Quote updated successfully", Constants.SUCCESS, (endTime - startTime));
     }
 }
