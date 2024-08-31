@@ -10,6 +10,7 @@ import com.neurospark.nerdnudge.useractivity.utils.Commons;
 import java.util.Map;
 
 public class TopicwiseSummaryService {
+
     public void updateTopicwiseSummary(JsonObject userData, UserActivityCounts counts, NerdPersistClient shotsStatsPersist) {
         JsonElement topicwiseEle = userData.get("topicwise");
         JsonObject topicwiseObject = (topicwiseEle == null || topicwiseEle.isJsonNull()) ? new JsonObject() : topicwiseEle.getAsJsonObject();
@@ -29,17 +30,18 @@ public class TopicwiseSummaryService {
             Map<String, int[]> topicSummaryCounts = counts.getTopicsSummaryCounts();
             Map<String, int[]> topicsCorrectCounts = counts.getTopicsCorrectnessCounts();
             for (String topic : topicSummaryCounts.keySet()) {
-                JsonElement thisTopicDetailsFromUserDataEle = topicwiseOverallObject.get(topic);
+                String topicCode = UserActivityServiceImpl.topicNameToTopicCodeMapping.get(topic).getAsString();
+                JsonElement thisTopicDetailsFromUserDataEle = topicwiseOverallObject.get(topicCode);
                 JsonObject thisTopicDetailsFromUserDataObject = null;
                 if(thisTopicDetailsFromUserDataEle == null || thisTopicDetailsFromUserDataEle.isJsonNull()) {
                     thisTopicDetailsFromUserDataObject = new JsonObject();
-                    shotsStatsPersist.incr(topic + "_user_count", 1);
+                    shotsStatsPersist.incr(topicCode + "_user_count", 1);
                 }
                 else {
                     thisTopicDetailsFromUserDataObject = thisTopicDetailsFromUserDataEle.getAsJsonObject();
                 }
 
-                topicwiseOverallObject.add(topic, thisTopicDetailsFromUserDataObject);
+                topicwiseOverallObject.add(topicCode, thisTopicDetailsFromUserDataObject);
 
                 JsonElement summaryArrayEle = thisTopicDetailsFromUserDataObject.get("summary");
                 JsonArray summaryArray = (summaryArrayEle == null || summaryArrayEle.isJsonNull()) ? new JsonArray() : summaryArrayEle.getAsJsonArray();
@@ -100,9 +102,10 @@ public class TopicwiseSummaryService {
 
         Map<String, int[]> topicSummaryCounts = counts.getTopicsSummaryCounts();
         for (String topic : topicSummaryCounts.keySet()) {
-            JsonElement thisTopicDetailsFromUserDataEle = topicwiseLast30DaysObject.get(topic);
+            String topicCode = UserActivityServiceImpl.topicNameToTopicCodeMapping.get(topic).getAsString();
+            JsonElement thisTopicDetailsFromUserDataEle = topicwiseLast30DaysObject.get(topicCode);
             JsonObject thisTopicDetailsFromUserDataObject = (thisTopicDetailsFromUserDataEle == null || thisTopicDetailsFromUserDataEle.isJsonNull()) ? new JsonObject() : thisTopicDetailsFromUserDataEle.getAsJsonObject();
-            topicwiseLast30DaysObject.add(topic, thisTopicDetailsFromUserDataObject);
+            topicwiseLast30DaysObject.add(topicCode, thisTopicDetailsFromUserDataObject);
 
             updateLast30DaysSummary(thisTopicDetailsFromUserDataObject, topic, topicSummaryCounts);
             updateLast30DaysSubtopics(thisTopicDetailsFromUserDataObject, topic, counts.getSubtopicsCounts().get(topic));

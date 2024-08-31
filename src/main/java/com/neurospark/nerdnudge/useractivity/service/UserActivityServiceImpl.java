@@ -16,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import java.time.Instant;
+import java.util.Iterator;
+import java.util.Map;
 
 @Service
 public class UserActivityServiceImpl implements UserActivityService {
@@ -24,6 +26,8 @@ public class UserActivityServiceImpl implements UserActivityService {
     private NerdPersistClient userProfilesPersist;
     private NerdPersistClient shotsStatsPersist;
     private JsonObject nerdConfig;
+    public static JsonObject topicNameToTopicCodeMapping = null;
+    public static JsonObject topicCodeToTopicNameMapping = null;
 
     @Autowired
     public void UserActivityServiceImpl(@Qualifier("configPersist") NerdPersistClient configPersist,
@@ -38,6 +42,25 @@ public class UserActivityServiceImpl implements UserActivityService {
     public void initialize() {
         nerdConfig = configPersist.get("nerd_config");
         userDataCache = new LRUCache<>(nerdConfig.get("numCacheEntries").getAsInt(), 0.75f);
+        if(topicNameToTopicCodeMapping == null)
+            updateTopicCodeMaps();
+    }
+
+    private void updateTopicCodeMaps() {
+        System.out.println("Updating topic code map.");
+        JsonObject topicCodeToTopicNameMappingObject = configPersist.get("collection_topic_mapping");
+        topicNameToTopicCodeMapping = new JsonObject();
+        topicCodeToTopicNameMapping = new JsonObject();
+
+        Iterator<Map.Entry<String, JsonElement>> topicsIterator = topicCodeToTopicNameMappingObject.entrySet().iterator();
+        while(topicsIterator.hasNext()) {
+            Map.Entry<String, JsonElement> thisEntry = topicsIterator.next();
+            topicNameToTopicCodeMapping.addProperty(thisEntry.getValue().getAsString(), thisEntry.getKey());
+            topicCodeToTopicNameMapping.addProperty(thisEntry.getKey(), thisEntry.getValue().getAsString());
+        }
+
+        System.out.println("Topic Name To Codes Mapping: " + topicNameToTopicCodeMapping);
+        System.out.println("Topic Code To Names Mapping: " + topicCodeToTopicNameMapping);
     }
 
     @Override
@@ -48,7 +71,7 @@ public class UserActivityServiceImpl implements UserActivityService {
         new DayQuotaService().updateDayQuota(userData, userQuizFlexSubmissionEntity, nerdConfig, userProfilesPersist);
         new UserSummaryService().updateUserSummary(userData, counts);
         new TopicwiseSummaryService().updateTopicwiseSummary(userData, counts, shotsStatsPersist);
-        new UserScoresService(configPersist).updateUserScores(userData, counts);
+        new UserScoresService().updateUserScores(userData, counts);
         new DayStatsService().updateDayStats(userData, counts);
         new StreaksService().updateStreak(userData, userQuizFlexSubmissionEntity);
         new CountersService().updateCounters(userData, userQuizFlexSubmissionEntity, shotsStatsPersist);
