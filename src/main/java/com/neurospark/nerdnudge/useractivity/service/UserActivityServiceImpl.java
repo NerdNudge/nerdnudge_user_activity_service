@@ -75,6 +75,7 @@ public class UserActivityServiceImpl implements UserActivityService {
         new DayStatsService().updateDayStats(userData, counts);
         new StreaksService().updateStreak(userData, userQuizFlexSubmissionEntity);
         new CountersService().updateCounters(userData, userQuizFlexSubmissionEntity, shotsStatsPersist);
+        new PeerComparisonService().updatePeerComparisonData(counts, shotsStatsPersist);
 
         saveUserProfileDocument(userQuizFlexSubmissionEntity.getUserId(), userData);
         System.out.println("Re-fetch: " + userProfilesPersist.get(userQuizFlexSubmissionEntity.getUserId()));

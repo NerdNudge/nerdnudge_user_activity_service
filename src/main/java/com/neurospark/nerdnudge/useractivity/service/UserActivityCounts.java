@@ -22,6 +22,7 @@ public class UserActivityCounts {
     private Map<String, int[]> topicsSummaryCounts = new HashMap<>();
     private Map<String, int[]> topicsCorrectnessCounts = new HashMap<>();
     private Map<String, Integer> topicScores = new HashMap<>();
+    private Map<String, Map<String, int[]>> topicDifficultyCounts = new HashMap<>();
 
     UserActivityCounts(UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
         System.out.println("Updating counts from user activity now.");
@@ -43,6 +44,8 @@ public class UserActivityCounts {
                 subtopicsCounts[1] = thisQuizflex.get(2).equals("Y") ? subtopicsCounts[1] + 1 : subtopicsCounts[1];
                 topicCorrectnessCountsArray[0] ++;
                 topicCorrectnessCountsArray[1] = thisQuizflex.get(2).equals("Y") ? topicCorrectnessCountsArray[1] + 1 : topicCorrectnessCountsArray[1];
+                updateTopicDifficultyCounts(thisTopic, thisQuizflex);
+
                 if (thisQuizflex.get(1).equals("easy")) {
                     topicSummaryCounts[0] ++;
                     currentEasyCount++;
@@ -69,6 +72,16 @@ public class UserActivityCounts {
             getTopicsSummaryCounts().put(thisTopic, topicSummaryCounts);
         }
         System.out.println("Counts: ------------ " + this);
+    }
+
+    private void updateTopicDifficultyCounts(String thisTopic, List<String> thisQuizflex) {
+        Map<String, int[]> currentTopicDifficultyCounts = getTopicDifficultyCounts().getOrDefault(thisTopic, new HashMap<>());
+        int[] currentDifficultyCounts = currentTopicDifficultyCounts.getOrDefault(thisQuizflex.get(1), new int[2]);
+        currentDifficultyCounts[0] ++;
+        currentDifficultyCounts[1] = thisQuizflex.get(2).equals("Y") ? currentDifficultyCounts[1] + 1 : currentDifficultyCounts[1];
+
+        currentTopicDifficultyCounts.put(thisQuizflex.get(1), currentDifficultyCounts);
+        getTopicDifficultyCounts().put(thisTopic, currentTopicDifficultyCounts);
     }
 
     private double getCurrentQuizflexScore(boolean isCorrect, String difficulty) {

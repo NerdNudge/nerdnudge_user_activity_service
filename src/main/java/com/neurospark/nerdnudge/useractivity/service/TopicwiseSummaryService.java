@@ -32,7 +32,7 @@ public class TopicwiseSummaryService {
             for (String topic : topicSummaryCounts.keySet()) {
                 String topicCode = UserActivityServiceImpl.topicNameToTopicCodeMapping.get(topic).getAsString();
                 JsonElement thisTopicDetailsFromUserDataEle = topicwiseOverallObject.get(topicCode);
-                JsonObject thisTopicDetailsFromUserDataObject = null;
+                JsonObject thisTopicDetailsFromUserDataObject;
                 if(thisTopicDetailsFromUserDataEle == null || thisTopicDetailsFromUserDataEle.isJsonNull()) {
                     thisTopicDetailsFromUserDataObject = new JsonObject();
                     shotsStatsPersist.incr(topicCode + "_user_count", 1);
@@ -42,6 +42,7 @@ public class TopicwiseSummaryService {
                 }
 
                 topicwiseOverallObject.add(topicCode, thisTopicDetailsFromUserDataObject);
+                updateDifficultyCounts(topic, thisTopicDetailsFromUserDataObject, counts);
 
                 JsonElement summaryArrayEle = thisTopicDetailsFromUserDataObject.get("summary");
                 JsonArray summaryArray = (summaryArrayEle == null || summaryArrayEle.isJsonNull()) ? new JsonArray() : summaryArrayEle.getAsJsonArray();
@@ -91,6 +92,28 @@ public class TopicwiseSummaryService {
         }
         catch(Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    private void updateDifficultyCounts(String topic, JsonObject thisTopicDetailsFromUserDataObject, UserActivityCounts counts) {
+        Map<String, Map<String, int[]>> topicDifficultyCounts = counts.getTopicDifficultyCounts();
+        if(! topicDifficultyCounts.containsKey(topic))
+            return;
+
+        Map<String, int[]> currentDifficultyCounts = topicDifficultyCounts.get(topic);
+        for(String difficulty: currentDifficultyCounts.keySet()) {
+            JsonArray difficultyArray = (thisTopicDetailsFromUserDataObject.has(difficulty)) ? thisTopicDetailsFromUserDataObject.get(difficulty).getAsJsonArray() : new JsonArray();
+            thisTopicDetailsFromUserDataObject.add(difficulty.toLowerCase(), difficultyArray);
+
+            int[] currentDifficultyInt = currentDifficultyCounts.get(difficulty);
+            if(difficultyArray.size() > 0) {
+                difficultyArray.set(0, new JsonPrimitive(difficultyArray.get(0).getAsInt() + currentDifficultyInt[0]));
+                difficultyArray.set(1, new JsonPrimitive(difficultyArray.get(1).getAsInt() + currentDifficultyInt[1]));
+            }
+            else {
+                difficultyArray.add(currentDifficultyInt[0]);
+                difficultyArray.add(currentDifficultyInt[1]);
+            }
         }
     }
 
