@@ -46,12 +46,12 @@ public class UserActivityCounts {
                 topicCorrectnessCountsArray[1] = thisQuizflex.get(2).equals("Y") ? topicCorrectnessCountsArray[1] + 1 : topicCorrectnessCountsArray[1];
                 updateTopicDifficultyCounts(thisTopic, thisQuizflex);
 
-                if (thisQuizflex.get(1).equals("easy")) {
+                if (thisQuizflex.get(1).equalsIgnoreCase("easy")) {
                     topicSummaryCounts[0] ++;
                     currentEasyCount++;
                     currentEasyCorrect = thisQuizflex.get(2).equals("Y") ? currentEasyCorrect + 1 : currentEasyCorrect;
                     currentTopicScore += getCurrentQuizflexScore(thisQuizflex.get(2).equals("Y"), "easy");
-                } else if (thisQuizflex.get(1).equals("medium")) {
+                } else if (thisQuizflex.get(1).equalsIgnoreCase("medium")) {
                     topicSummaryCounts[1] ++;
                     currentMedCount++;
                     currentMedCorrect = thisQuizflex.get(2).equals("Y") ? currentMedCorrect + 1 : currentMedCorrect;
