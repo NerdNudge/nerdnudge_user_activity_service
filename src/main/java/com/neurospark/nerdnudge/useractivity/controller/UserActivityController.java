@@ -7,11 +7,8 @@ import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.response.ApiResponse;
 import com.neurospark.nerdnudge.useractivity.service.UserActivityService;
 import com.neurospark.nerdnudge.useractivity.utils.Constants;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.http.HttpRequest;
 
 @RestController
 @RequestMapping("/api/nerdnudge/useractivity")

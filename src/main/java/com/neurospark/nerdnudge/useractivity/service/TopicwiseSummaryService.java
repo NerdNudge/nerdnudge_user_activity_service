@@ -30,6 +30,9 @@ public class TopicwiseSummaryService {
             Map<String, int[]> topicSummaryCounts = counts.getTopicsSummaryCounts();
             Map<String, int[]> topicsCorrectCounts = counts.getTopicsCorrectnessCounts();
             for (String topic : topicSummaryCounts.keySet()) {
+                if(! UserActivityServiceImpl.topicNameToTopicCodeMapping.has(topic))
+                    continue;
+
                 String topicCode = UserActivityServiceImpl.topicNameToTopicCodeMapping.get(topic).getAsString();
                 JsonElement thisTopicDetailsFromUserDataEle = topicwiseOverallObject.get(topicCode);
                 JsonObject thisTopicDetailsFromUserDataObject;
