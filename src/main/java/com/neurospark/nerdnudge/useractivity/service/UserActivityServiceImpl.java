@@ -23,6 +23,7 @@ public class UserActivityServiceImpl implements UserActivityService {
     private NerdPersistClient userProfilesPersist;
     private NerdPersistClient shotsStatsPersist;
     private NerdPersistClient userFeedbackPersist;
+    private NerdPersistClient terminatedUsersPersist;
     private JsonObject nerdConfig;
     public static JsonObject topicNameToTopicCodeMapping = null;
     public static JsonObject topicCodeToTopicNameMapping = null;
@@ -31,11 +32,13 @@ public class UserActivityServiceImpl implements UserActivityService {
     public void UserActivityServiceImpl(@Qualifier("configPersist") NerdPersistClient configPersist,
                                         @Qualifier("userProfilesPersist") NerdPersistClient userProfilesPersist,
                                         @Qualifier("shotsStatsPersist") NerdPersistClient shotsStatsPersist,
-                                        @Qualifier("userFeedbackPersist") NerdPersistClient userFeedbackPersist) {
+                                        @Qualifier("userFeedbackPersist") NerdPersistClient userFeedbackPersist,
+                                        @Qualifier("terminatedUsersPersist") NerdPersistClient terminatedUsersPersist) {
         this.configPersist = configPersist;
         this.userProfilesPersist = userProfilesPersist;
         this.shotsStatsPersist = shotsStatsPersist;
         this.userFeedbackPersist = userFeedbackPersist;
+        this.terminatedUsersPersist = terminatedUsersPersist;
     }
 
     @PostConstruct
@@ -138,6 +141,20 @@ public class UserActivityServiceImpl implements UserActivityService {
         feedbackObject.addProperty("docType", "userFeedback");
 
         userFeedbackPersist.set(userFeedbackSubmissionEntity.getUserId() + "_" + timestamp, feedbackObject);
+    }
+
+    @Override
+    public void deleteUserAccount(String userId) {
+        JsonObject userData = getUserProfileDocument(userId);
+        userData.addProperty("terminationDate", System.currentTimeMillis());
+        terminatedUsersPersist.set(userId, userData);
+        userProfilesPersist.delete(userId);
+
+        JsonObject userTrendsData = userProfilesPersist.get(userId + "-trends");
+        if(userTrendsData != null) {
+            terminatedUsersPersist.set(userId + "-trends", userTrendsData);
+            userProfilesPersist.delete(userId + "-trends");
+        }
     }
 
     private void saveUserProfileDocument(String userId, JsonObject userDocument) {

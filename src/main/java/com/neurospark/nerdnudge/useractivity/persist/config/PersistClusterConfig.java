@@ -49,4 +49,9 @@ public class PersistClusterConfig {
     public NerdPersistClient userFeedbackPersist() {
         return new NerdPersistClient(persistConnectionString, persistUsername, persistPassword, "users", "users", "feedback");
     }
+
+    @Bean(name = "terminatedUsersPersist")
+    public NerdPersistClient terminatedUsersPersist() {
+        return new NerdPersistClient(persistConnectionString, persistUsername, persistPassword, "users", "users", "terminated");
+    }
 }

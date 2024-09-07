@@ -12,4 +12,6 @@ public interface UserActivityService {
     public void updateUserFavoriteQuoteSubmission(UserFavoriteQuoteEntity userFavoriteQuoteEntity);
 
     public void updateUserFeedbackSubmission(UserFeedbackSubmissionEntity userFeedbackSubmissionEntity);
+
+    public void deleteUserAccount(String userId);
 }

@@ -1,5 +1,6 @@
 package com.neurospark.nerdnudge.useractivity.controller;
 
+import com.google.gson.JsonObject;
 import com.neurospark.nerdnudge.useractivity.dto.*;
 import com.neurospark.nerdnudge.useractivity.response.ApiResponse;
 import com.neurospark.nerdnudge.useractivity.service.UserActivityService;
@@ -57,6 +58,15 @@ public class UserActivityController {
         userActivityService.updateUserFeedbackSubmission(userFeedbackSubmissionEntity);
         long endTime = System.currentTimeMillis();
         return new ApiResponse<>(Constants.SUCCESS, "User Feedback updated successfully", Constants.SUCCESS, (endTime - startTime));
+    }
+
+    @PutMapping("/deleteUserAccount")
+    public ApiResponse<String> deleteUserAccount(@RequestBody UserTerminationEntity userTerminationEntity) {
+        System.out.println("Deleting user account: " + userTerminationEntity);
+        long startTime = System.currentTimeMillis();
+        userActivityService.deleteUserAccount(userTerminationEntity.getEmail());
+        long endTime = System.currentTimeMillis();
+        return new ApiResponse<>(Constants.SUCCESS, "User Account deleted successfully", Constants.SUCCESS, (endTime - startTime));
     }
 
     @GetMapping("/health")
