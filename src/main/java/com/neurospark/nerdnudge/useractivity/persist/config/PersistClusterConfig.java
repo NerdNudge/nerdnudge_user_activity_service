@@ -30,13 +30,6 @@ public class PersistClusterConfig {
     @Value("${persist.config.collection}")
     private String persistConfigCollectionName;
 
-    /*@Bean
-    @Primary
-    public Cluster cluster() {
-        ClusterEnvironment env = ClusterEnvironment.builder().build();
-        return Cluster.connect(persistConnectionString, ClusterOptions.clusterOptions(persistUsername, persistPassword).environment(env));
-    }*/
-
     @Bean(name = "configPersist")
     public NerdPersistClient configPersist() {
         return new NerdPersistClient(persistConnectionString, persistUsername, persistPassword, persistConfigBucketName, persistConfigScopeName, persistConfigCollectionName);
@@ -50,5 +43,10 @@ public class PersistClusterConfig {
     @Bean(name = "shotsStatsPersist")
     public NerdPersistClient shotsStatsPersist() {
         return new NerdPersistClient(persistConnectionString, persistUsername, persistPassword, "content", "shotstats", "stats");
+    }
+
+    @Bean(name = "userFeedbackPersist")
+    public NerdPersistClient userFeedbackPersist() {
+        return new NerdPersistClient(persistConnectionString, persistUsername, persistPassword, "users", "users", "feedback");
     }
 }

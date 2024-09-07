@@ -1,9 +1,6 @@
 package com.neurospark.nerdnudge.useractivity.service;
 
-import com.neurospark.nerdnudge.useractivity.dto.UserFavoriteQuoteEntity;
-import com.neurospark.nerdnudge.useractivity.dto.UserFavoritesSubmissionEntity;
-import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
-import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
+import com.neurospark.nerdnudge.useractivity.dto.*;
 
 public interface UserActivityService {
     public void updateUserQuizflexSubmission(UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity);
@@ -13,4 +10,6 @@ public interface UserActivityService {
     public void updateUserFavoritesSubmission(UserFavoritesSubmissionEntity userFavoritesSubmissionEntity);
 
     public void updateUserFavoriteQuoteSubmission(UserFavoriteQuoteEntity userFavoriteQuoteEntity);
+
+    public void updateUserFeedbackSubmission(UserFeedbackSubmissionEntity userFeedbackSubmissionEntity);
 }

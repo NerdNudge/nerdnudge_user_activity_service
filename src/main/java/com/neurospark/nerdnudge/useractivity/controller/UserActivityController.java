@@ -1,9 +1,6 @@
 package com.neurospark.nerdnudge.useractivity.controller;
 
-import com.neurospark.nerdnudge.useractivity.dto.UserFavoriteQuoteEntity;
-import com.neurospark.nerdnudge.useractivity.dto.UserFavoritesSubmissionEntity;
-import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
-import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
+import com.neurospark.nerdnudge.useractivity.dto.*;
 import com.neurospark.nerdnudge.useractivity.response.ApiResponse;
 import com.neurospark.nerdnudge.useractivity.service.UserActivityService;
 import com.neurospark.nerdnudge.useractivity.utils.Constants;
@@ -51,5 +48,19 @@ public class UserActivityController {
         userActivityService.updateUserFavoriteQuoteSubmission(userFavoriteQuoteEntity);
         long endTime = System.currentTimeMillis();
         return new ApiResponse<>(Constants.SUCCESS, "User Favorite Quote updated successfully", Constants.SUCCESS, (endTime - startTime));
+    }
+
+    @PutMapping("/userFeedbackSubmission")
+    public ApiResponse<String> updateUserFeedbackSubmission(@RequestBody UserFeedbackSubmissionEntity userFeedbackSubmissionEntity) {
+        System.out.println("Adding user feedback for user: " + userFeedbackSubmissionEntity);
+        long startTime = System.currentTimeMillis();
+        userActivityService.updateUserFeedbackSubmission(userFeedbackSubmissionEntity);
+        long endTime = System.currentTimeMillis();
+        return new ApiResponse<>(Constants.SUCCESS, "User Feedback updated successfully", Constants.SUCCESS, (endTime - startTime));
+    }
+
+    @GetMapping("/health")
+    public ApiResponse<String> healthCheck() {
+        return new ApiResponse<>(Constants.SUCCESS, "Health Check Pass", Constants.SUCCESS, 0);
     }
 }

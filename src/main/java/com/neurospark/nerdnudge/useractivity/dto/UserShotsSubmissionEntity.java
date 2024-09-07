@@ -10,6 +10,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserShotsSubmissionEntity {
     String userId;
+    String userFullName;
     long time;
     Map<String, Map<String, Integer>> shots;
     List<String> likes;

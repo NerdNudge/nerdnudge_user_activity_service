@@ -5,10 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.neurospark.nerdnudge.couchbase.service.NerdPersistClient;
-import com.neurospark.nerdnudge.useractivity.dto.UserFavoriteQuoteEntity;
-import com.neurospark.nerdnudge.useractivity.dto.UserFavoritesSubmissionEntity;
-import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
-import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
+import com.neurospark.nerdnudge.useractivity.dto.*;
 import com.neurospark.nerdnudge.useractivity.utils.Commons;
 import com.neurospark.nerdnudge.useractivity.utils.LRUCache;
 import jakarta.annotation.PostConstruct;
@@ -25,6 +22,7 @@ public class UserActivityServiceImpl implements UserActivityService {
     private NerdPersistClient configPersist;
     private NerdPersistClient userProfilesPersist;
     private NerdPersistClient shotsStatsPersist;
+    private NerdPersistClient userFeedbackPersist;
     private JsonObject nerdConfig;
     public static JsonObject topicNameToTopicCodeMapping = null;
     public static JsonObject topicCodeToTopicNameMapping = null;
@@ -32,10 +30,12 @@ public class UserActivityServiceImpl implements UserActivityService {
     @Autowired
     public void UserActivityServiceImpl(@Qualifier("configPersist") NerdPersistClient configPersist,
                                         @Qualifier("userProfilesPersist") NerdPersistClient userProfilesPersist,
-                                        @Qualifier("shotsStatsPersist") NerdPersistClient shotsStatsPersist) {
+                                        @Qualifier("shotsStatsPersist") NerdPersistClient shotsStatsPersist,
+                                        @Qualifier("userFeedbackPersist") NerdPersistClient userFeedbackPersist) {
         this.configPersist = configPersist;
         this.userProfilesPersist = userProfilesPersist;
         this.shotsStatsPersist = shotsStatsPersist;
+        this.userFeedbackPersist = userFeedbackPersist;
     }
 
     @PostConstruct
@@ -77,6 +77,9 @@ public class UserActivityServiceImpl implements UserActivityService {
         new CountersService().updateCounters(userData, userQuizFlexSubmissionEntity, shotsStatsPersist);
         new PeerComparisonService().updatePeerComparisonData(counts, shotsStatsPersist);
 
+        if(userQuizFlexSubmissionEntity.getUserFullName() != null && ! userQuizFlexSubmissionEntity.getUserFullName().isEmpty())
+            userData.addProperty("userFullName", userQuizFlexSubmissionEntity.getUserFullName());
+
         saveUserProfileDocument(userQuizFlexSubmissionEntity.getUserId(), userData);
         System.out.println("Re-fetch: " + userProfilesPersist.get(userQuizFlexSubmissionEntity.getUserId()));
         System.out.println("from cache: " + getUserProfileDocument(userQuizFlexSubmissionEntity.getUserId()));
@@ -87,6 +90,10 @@ public class UserActivityServiceImpl implements UserActivityService {
         JsonObject userData = getUserProfileDocument(userShotsSubmissionEntity.getUserId());
         new DayQuotaService().updateDayQuota(userData, userShotsSubmissionEntity, nerdConfig, userProfilesPersist);
         new CountersService().updateCounters(userData, userShotsSubmissionEntity, shotsStatsPersist);
+
+        if(userShotsSubmissionEntity.getUserFullName() != null && ! userShotsSubmissionEntity.getUserFullName().isEmpty())
+            userData.addProperty("userFullName", userShotsSubmissionEntity.getUserFullName());
+
         saveUserProfileDocument(userShotsSubmissionEntity.getUserId(), userData);
         System.out.println("Re-fetch: " + userProfilesPersist.get(userShotsSubmissionEntity.getUserId()));
         System.out.println("from cache: " + getUserProfileDocument(userShotsSubmissionEntity.getUserId()));
@@ -117,6 +124,20 @@ public class UserActivityServiceImpl implements UserActivityService {
         }
         Commons.getInstance().housekeepJsonArray(favoriteQuotesArray, 20);
         saveUserProfileDocument(userFavoriteQuoteEntity.getUserId(), userData);
+    }
+
+    @Override
+    public void updateUserFeedbackSubmission(UserFeedbackSubmissionEntity userFeedbackSubmissionEntity) {
+        JsonObject feedbackObject = new JsonObject();
+        long timestamp = System.currentTimeMillis();
+        feedbackObject.addProperty("userId", userFeedbackSubmissionEntity.getUserId());
+        feedbackObject.addProperty("feedbackType", userFeedbackSubmissionEntity.getFeedbackType());
+        feedbackObject.addProperty("feedback", userFeedbackSubmissionEntity.getFeedback());
+        feedbackObject.addProperty("status", "NEW");
+        feedbackObject.addProperty("timestamp", timestamp);
+        feedbackObject.addProperty("docType", "userFeedback");
+
+        userFeedbackPersist.set(userFeedbackSubmissionEntity.getUserId() + "_" + timestamp, feedbackObject);
     }
 
     private void saveUserProfileDocument(String userId, JsonObject userDocument) {
