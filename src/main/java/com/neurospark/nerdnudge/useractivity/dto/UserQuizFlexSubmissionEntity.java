@@ -1,6 +1,7 @@
 package com.neurospark.nerdnudge.useractivity.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -17,4 +18,7 @@ public class UserQuizFlexSubmissionEntity {
     List<String> dislikes;
     Map<String, Map<String, List<String>>> favorites;
     List<String> shares;
+
+    @JsonProperty(defaultValue = "false")
+    boolean isRWC;
 }

@@ -74,6 +74,7 @@ public class UserActivityServiceImpl implements UserActivityService {
         new DayQuotaService().updateDayQuota(userData, userQuizFlexSubmissionEntity, nerdConfig, userProfilesPersist);
         new UserSummaryService().updateUserSummary(userData, counts);
         new TopicwiseSummaryService().updateTopicwiseSummary(userData, counts, shotsStatsPersist);
+        new RealworldChallengeService().updateRealworldChallenge(userData, userQuizFlexSubmissionEntity, counts);
         new UserScoresService().updateUserScores(userData, counts);
         new DayStatsService().updateDayStats(userData, counts);
         new StreaksService().updateStreak(userData, userQuizFlexSubmissionEntity);
