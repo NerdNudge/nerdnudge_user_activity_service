@@ -6,9 +6,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.neurospark.nerdnudge.couchbase.service.NerdPersistClient;
 import com.neurospark.nerdnudge.useractivity.utils.Commons;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
+@Slf4j
 public class TopicwiseSummaryService {
 
     public void updateTopicwiseSummary(JsonObject userData, UserActivityCounts counts, NerdPersistClient shotsStatsPersist) {
@@ -22,7 +24,6 @@ public class TopicwiseSummaryService {
 
     private void updateTopicwiseOverallSummary(JsonObject topicwiseObject, UserActivityCounts counts, NerdPersistClient shotsStatsPersist) {
         try {
-            System.out.println("Updating topicwise summary now.");
             JsonElement topicwiseOverallEle = topicwiseObject.get("overall");
             JsonObject topicwiseOverallObject = (topicwiseOverallEle == null || topicwiseOverallEle.isJsonNull()) ? new JsonObject() : topicwiseOverallEle.getAsJsonObject();
             topicwiseObject.add("overall", topicwiseOverallObject);
@@ -95,6 +96,7 @@ public class TopicwiseSummaryService {
         }
         catch(Exception ex) {
             ex.printStackTrace();
+            log.error("Issue updating topicwise overall summary: {}", ex.getMessage());
         }
     }
 
@@ -121,7 +123,6 @@ public class TopicwiseSummaryService {
     }
 
     private void updateTopicwiseLast30DaysSummary(JsonObject topicwiseObject, UserActivityCounts counts) {
-        System.out.println("Updating topicwise last 30 days now.");
         JsonElement topicwiseLast30DaysEle = topicwiseObject.get("last30Days");
         JsonObject topicwiseLast30DaysObject = (topicwiseLast30DaysEle == null || topicwiseLast30DaysEle.isJsonNull()) ? new JsonObject() : topicwiseLast30DaysEle.getAsJsonObject();
         topicwiseObject.add("last30Days", topicwiseLast30DaysObject);

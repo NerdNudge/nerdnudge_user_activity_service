@@ -34,7 +34,7 @@ public class RealworldChallengeService {
             thisTopicArray.add(new JsonPrimitive(thisTopicCurrentCounts[1]));
 
             thisTopicRwcUserDataObject.add(Commons.getInstance().getDaystamp(), thisTopicArray);
-            Commons.getInstance().housekeepDayJsonObject(thisTopicRwcUserDataObject, 30);
+            Commons.getInstance().housekeepDayJsonObject(thisTopicRwcUserDataObject, 15);
         }
     }
 }

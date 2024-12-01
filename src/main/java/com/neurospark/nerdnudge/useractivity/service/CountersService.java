@@ -8,10 +8,12 @@ import com.neurospark.nerdnudge.useractivity.dto.UserFavoritesSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.utils.Commons;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class CountersService {
 
     private NerdPersistClient shotsStatsPersist;
@@ -22,7 +24,7 @@ public class CountersService {
 
     public void updateCounters(JsonObject userData, UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity, NerdPersistClient shotsStatsPersist) {
         this.shotsStatsPersist = shotsStatsPersist;
-        System.out.println("updating stats now for flexes..");
+        log.info("Updating quizflex counters for user: {}", userQuizFlexSubmissionEntity.getUserId());
         updateCounter(userQuizFlexSubmissionEntity.getLikes(), LIKES_SUFFIX);
         updateCounter(userQuizFlexSubmissionEntity.getDislikes(), DISLIKES_SUFFIX);
         updateCounter(userQuizFlexSubmissionEntity.getShares(), SHARES_SUFFIX);
@@ -31,7 +33,7 @@ public class CountersService {
 
     public void updateCounters(JsonObject userData, UserShotsSubmissionEntity userShotsSubmissionEntity, NerdPersistClient shotsStatsPersist) {
         this.shotsStatsPersist = shotsStatsPersist;
-        System.out.println("updating stats now for shots..");
+        log.info("Updating shots counters for user: {}", userShotsSubmissionEntity.getUserId());
         updateCounter(userShotsSubmissionEntity.getLikes(), LIKES_SUFFIX);
         updateCounter(userShotsSubmissionEntity.getDislikes(), DISLIKES_SUFFIX);
         updateCounter(userShotsSubmissionEntity.getShares(), SHARES_SUFFIX);
@@ -40,7 +42,7 @@ public class CountersService {
 
     public void updateCounters(JsonObject userData, UserFavoritesSubmissionEntity userFavoritesSubmissionEntity, NerdPersistClient shotsStatsPersist) {
         this.shotsStatsPersist = shotsStatsPersist;
-        System.out.println("updating stats now for shots..");
+        log.info("Updating favorites counters for user: {}", userFavoritesSubmissionEntity.getUserId());
         updateCounter(userFavoritesSubmissionEntity.getLikes(), LIKES_SUFFIX);
         updateCounter(userFavoritesSubmissionEntity.getDislikes(), DISLIKES_SUFFIX);
         updateCounter(userFavoritesSubmissionEntity.getShares(), SHARES_SUFFIX);

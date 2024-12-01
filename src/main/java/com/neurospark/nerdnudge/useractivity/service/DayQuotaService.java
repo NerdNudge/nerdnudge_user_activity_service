@@ -8,11 +8,13 @@ import com.neurospark.nerdnudge.couchbase.service.NerdPersistClient;
 import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.dto.UserShotsSubmissionEntity;
 import com.neurospark.nerdnudge.useractivity.utils.Commons;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class DayQuotaService {
 
     @Autowired
@@ -75,7 +77,7 @@ public class DayQuotaService {
     }
 
     public void updateDayQuota(JsonObject userData, UserShotsSubmissionEntity userShotsSubmissionEntity, JsonObject nerdConfig, NerdPersistClient userProfilesPersist) {
-        System.out.println("Updating day quota for shots.");
+        log.info("Updating day quota for user: {}", userShotsSubmissionEntity.getUserId());
         this.userProfilesPersist = userProfilesPersist;
         this.nerdConfig = nerdConfig;
         Map<String, Map<String, Integer>> currentShots = userShotsSubmissionEntity.getShots();

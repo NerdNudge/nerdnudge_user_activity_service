@@ -9,6 +9,7 @@ import com.neurospark.nerdnudge.useractivity.dto.*;
 import com.neurospark.nerdnudge.useractivity.utils.Commons;
 import com.neurospark.nerdnudge.useractivity.utils.LRUCache;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
 
+@Slf4j
 @Service
 public class UserActivityServiceImpl implements UserActivityService {
     private LRUCache<String, JsonObject> userDataCache;
@@ -50,7 +52,7 @@ public class UserActivityServiceImpl implements UserActivityService {
     }
 
     private void updateTopicCodeMaps() {
-        System.out.println("Updating topic code map.");
+        log.info("Updating topic code map.");
         JsonObject topicCodeToTopicNameMappingObject = configPersist.get("collection_topic_mapping");
         topicNameToTopicCodeMapping = new JsonObject();
         topicCodeToTopicNameMapping = new JsonObject();
@@ -62,8 +64,8 @@ public class UserActivityServiceImpl implements UserActivityService {
             topicCodeToTopicNameMapping.addProperty(thisEntry.getKey(), thisEntry.getValue().getAsString());
         }
 
-        System.out.println("Topic Name To Codes Mapping: " + topicNameToTopicCodeMapping);
-        System.out.println("Topic Code To Names Mapping: " + topicCodeToTopicNameMapping);
+        log.info("Topic Name To Codes Mapping: {}", topicNameToTopicCodeMapping);
+        log.info("Topic Code To Names Mapping: {}", topicCodeToTopicNameMapping);
     }
 
     @Override
@@ -85,8 +87,6 @@ public class UserActivityServiceImpl implements UserActivityService {
             userData.addProperty("userFullName", userQuizFlexSubmissionEntity.getUserFullName());
 
         saveUserProfileDocument(userQuizFlexSubmissionEntity.getUserId(), userData);
-        System.out.println("Re-fetch: " + userProfilesPersist.get(userQuizFlexSubmissionEntity.getUserId()));
-        System.out.println("from cache: " + getUserProfileDocument(userQuizFlexSubmissionEntity.getUserId()));
     }
 
     @Override
@@ -99,8 +99,6 @@ public class UserActivityServiceImpl implements UserActivityService {
             userData.addProperty("userFullName", userShotsSubmissionEntity.getUserFullName());
 
         saveUserProfileDocument(userShotsSubmissionEntity.getUserId(), userData);
-        System.out.println("Re-fetch: " + userProfilesPersist.get(userShotsSubmissionEntity.getUserId()));
-        System.out.println("from cache: " + getUserProfileDocument(userShotsSubmissionEntity.getUserId()));
     }
 
     @Override
@@ -108,8 +106,6 @@ public class UserActivityServiceImpl implements UserActivityService {
         JsonObject userData = getUserProfileDocument(userFavoritesSubmissionEntity.getUserId());
         new CountersService().updateCounters(userData, userFavoritesSubmissionEntity, shotsStatsPersist);
         saveUserProfileDocument(userFavoritesSubmissionEntity.getUserId(), userData);
-        System.out.println("Re-fetch: " + userProfilesPersist.get(userFavoritesSubmissionEntity.getUserId()));
-        System.out.println("from cache: " + getUserProfileDocument(userFavoritesSubmissionEntity.getUserId()));
     }
 
     @Override
@@ -161,16 +157,19 @@ public class UserActivityServiceImpl implements UserActivityService {
     private void saveUserProfileDocument(String userId, JsonObject userDocument) {
         userDataCache.put(userId, userDocument);
         userProfilesPersist.set(userId, userDocument);
-        System.out.println("setting the data as: " + userDocument + " for user: " + userId);
+        log.info("Setting the data for user: {}", userId);
     }
 
 
     private JsonObject getUserProfileDocument(String userId) {
-        if(userDataCache.containsKey(userId))
+        if(userDataCache.containsKey(userId)) {
+            log.info("Returning user data from cache: {}", userId);
             return userDataCache.get(userId);
+        }
 
         JsonObject userData = userProfilesPersist.get(userId);
         if(userData == null) {
+            log.info("User does not exist, creating a new user: {}", userId);
             userData = new JsonObject();
             userData.addProperty("registrationDate", Instant.now().getEpochSecond());
             userData.addProperty("type", "userProfile");
@@ -178,7 +177,6 @@ public class UserActivityServiceImpl implements UserActivityService {
             userData.addProperty("accountStartDate", Commons.getInstance().getDaystamp());
         }
 
-        System.out.println("user data returned: " + userData);
         return userData;
     }
 }

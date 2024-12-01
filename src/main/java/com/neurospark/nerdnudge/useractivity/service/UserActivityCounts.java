@@ -2,11 +2,13 @@ package com.neurospark.nerdnudge.useractivity.service;
 
 import com.neurospark.nerdnudge.useractivity.dto.UserQuizFlexSubmissionEntity;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Data
 public class UserActivityCounts {
     private int currentTotalCount = 0;
@@ -25,7 +27,7 @@ public class UserActivityCounts {
     private Map<String, Map<String, int[]>> topicDifficultyCounts = new HashMap<>();
 
     UserActivityCounts(UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
-        System.out.println("Updating counts from user activity now.");
+        log.info("Updating counts from user activity: {}", userQuizFlexSubmissionEntity.getUserId());
         Map<String, Map<String, List<String>>> currentQuizflexes = userQuizFlexSubmissionEntity.getQuizflex();
         if(currentQuizflexes == null)
             return;
@@ -71,7 +73,7 @@ public class UserActivityCounts {
             getTopicsCorrectnessCounts().put(thisTopic, topicCorrectnessCountsArray);
             getTopicsSummaryCounts().put(thisTopic, topicSummaryCounts);
         }
-        System.out.println("Counts: ------------ " + this);
+        log.info("Updated counts: {}", this);
     }
 
     private void updateTopicDifficultyCounts(String thisTopic, List<String> thisQuizflex) {

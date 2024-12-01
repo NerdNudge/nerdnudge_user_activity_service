@@ -12,7 +12,6 @@ public class UserSummaryService {
     }
 
     private void updateOverallUserSummary(JsonObject userData, UserActivityCounts counts) {
-        System.out.println("Updating overall user summary now.");
         JsonElement summaryEle = userData.get("Summary");
         JsonObject summaryObject = (summaryEle == null || summaryEle.isJsonNull()) ? new JsonObject() : summaryEle.getAsJsonObject();
 
@@ -34,7 +33,6 @@ public class UserSummaryService {
     }
 
     private void updateLast30DaysUserSummary(JsonObject userData, UserActivityCounts counts) {
-        System.out.println("Updating ;ast 30 days summary now.");
         JsonElement summaryEle = userData.get("Summary");
         JsonObject summaryObject = (summaryEle == null || summaryEle.isJsonNull()) ? new JsonObject() : summaryEle.getAsJsonObject();
 
