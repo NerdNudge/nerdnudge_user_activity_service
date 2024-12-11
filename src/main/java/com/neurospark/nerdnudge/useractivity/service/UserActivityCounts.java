@@ -23,7 +23,7 @@ public class UserActivityCounts {
     private Map<String, Map<String, int[]>> subtopicsCounts = new HashMap<>();
     private Map<String, int[]> topicsSummaryCounts = new HashMap<>();
     private Map<String, int[]> topicsCorrectnessCounts = new HashMap<>();
-    private Map<String, Integer> topicScores = new HashMap<>();
+    private Map<String, Double> topicScores = new HashMap<>();
     private Map<String, Map<String, int[]>> topicDifficultyCounts = new HashMap<>();
 
     UserActivityCounts(UserQuizFlexSubmissionEntity userQuizFlexSubmissionEntity) {
@@ -36,7 +36,7 @@ public class UserActivityCounts {
             Map<String, List<String>> allQuizflexes = currentQuizflexes.get(thisTopic);
             int[] topicSummaryCounts = getTopicsSummaryCounts().getOrDefault(thisTopic, new int[3]);
             int[] topicCorrectnessCountsArray = getTopicsCorrectnessCounts().getOrDefault(thisTopic, new int[2]);
-            int currentTopicScore = getTopicScores().getOrDefault(thisTopic, 0);
+            double currentTopicScore = getTopicScores().getOrDefault(thisTopic, 0.0);
             for (String questionId : allQuizflexes.keySet()) {
                 List<String> thisQuizflex = allQuizflexes.get(questionId);
                 currentTotalCount++;
@@ -52,17 +52,23 @@ public class UserActivityCounts {
                     topicSummaryCounts[0] ++;
                     currentEasyCount++;
                     currentEasyCorrect = thisQuizflex.get(2).equals("Y") ? currentEasyCorrect + 1 : currentEasyCorrect;
-                    currentTopicScore += getCurrentQuizflexScore(thisQuizflex.get(2).equals("Y"), "easy");
+                    double currentQFScore = getCurrentQuizflexScore(thisQuizflex.get(2).equals("Y"), "easy");
+                    currentTopicScore += currentQFScore;
+                    log.info("Current QF Score returned for easy: {}, updated score: {}", currentQFScore, currentTopicScore);
                 } else if (thisQuizflex.get(1).equalsIgnoreCase("medium")) {
                     topicSummaryCounts[1] ++;
                     currentMedCount++;
                     currentMedCorrect = thisQuizflex.get(2).equals("Y") ? currentMedCorrect + 1 : currentMedCorrect;
-                    currentTopicScore += getCurrentQuizflexScore(thisQuizflex.get(2).equals("Y"), "medium");
+                    double currentQFScore = getCurrentQuizflexScore(thisQuizflex.get(2).equals("Y"), "medium");
+                    currentTopicScore += currentQFScore;
+                    log.info("Current QF Score returned for med: {}, updated score: {}", currentQFScore, currentTopicScore);
                 } else {
                     topicSummaryCounts[2] ++;
                     currentHardCount ++;
                     currentHardCorrect = thisQuizflex.get(2).equals("Y") ? currentHardCorrect + 1 : currentHardCorrect;
-                    currentTopicScore += getCurrentQuizflexScore(thisQuizflex.get(2).equals("Y"), "hard");
+                    double currentQFScore = getCurrentQuizflexScore(thisQuizflex.get(2).equals("Y"), "hard");
+                    currentTopicScore += currentQFScore;
+                    log.info("Current QF Score returned for hard: {}, updated score: {}", currentQFScore, currentTopicScore);
                 }
 
                 currentTotalCorrect = thisQuizflex.get(2).equals("Y") ? currentTotalCorrect + 1 : currentTotalCorrect;
@@ -87,7 +93,7 @@ public class UserActivityCounts {
     }
 
     private double getCurrentQuizflexScore(boolean isCorrect, String difficulty) {
-        return isCorrect ? getCorrectScore(difficulty) : getIncorrectScore(difficulty);
+        return isCorrect ? getCorrectScore(difficulty) : -1 * getIncorrectScore(difficulty);
     }
 
     private double getCorrectScore(String difficulty) {
