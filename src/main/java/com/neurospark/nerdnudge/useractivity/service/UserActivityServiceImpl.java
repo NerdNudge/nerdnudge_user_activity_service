@@ -76,12 +76,9 @@ public class UserActivityServiceImpl implements UserActivityService {
         new DayQuotaService().updateDayQuota(userData, userQuizFlexSubmissionEntity, nerdConfig, userProfilesPersist);
         new UserSummaryService().updateUserSummary(userData, counts);
         new TopicwiseSummaryService().updateTopicwiseSummary(userData, counts, shotsStatsPersist);
-        new RealworldChallengeService().updateRealworldChallenge(userData, userQuizFlexSubmissionEntity, counts);
-        new UserScoresService().updateUserScores(userData, counts);
         new DayStatsService().updateDayStats(userData, counts);
         new StreaksService().updateStreak(userData, userQuizFlexSubmissionEntity);
         new CountersService().updateCounters(userData, userQuizFlexSubmissionEntity, shotsStatsPersist);
-        new PeerComparisonService().updatePeerComparisonData(counts, shotsStatsPersist);
 
         if(userQuizFlexSubmissionEntity.getUserFullName() != null && ! userQuizFlexSubmissionEntity.getUserFullName().isEmpty())
             userData.addProperty("userFullName", userQuizFlexSubmissionEntity.getUserFullName());
@@ -94,11 +91,42 @@ public class UserActivityServiceImpl implements UserActivityService {
         JsonObject userData = getUserProfileDocument(userShotsSubmissionEntity.getUserId());
         new DayQuotaService().updateDayQuota(userData, userShotsSubmissionEntity, nerdConfig, userProfilesPersist);
         new CountersService().updateCounters(userData, userShotsSubmissionEntity, shotsStatsPersist);
+        updateWeeklyShotsSummary(userData, userShotsSubmissionEntity);
 
         if(userShotsSubmissionEntity.getUserFullName() != null && ! userShotsSubmissionEntity.getUserFullName().isEmpty())
             userData.addProperty("userFullName", userShotsSubmissionEntity.getUserFullName());
 
         saveUserProfileDocument(userShotsSubmissionEntity.getUserId(), userData);
+    }
+
+    private void updateWeeklyShotsSummary(JsonObject userData, UserShotsSubmissionEntity userShotsSubmissionEntity) {
+        JsonElement summaryEle = userData.get("Summary");
+        JsonObject summaryObject = (summaryEle == null || summaryEle.isJsonNull()) ? new JsonObject() : summaryEle.getAsJsonObject();
+
+        Map<String, Map<String, Integer>> currentShots = userShotsSubmissionEntity.getShots();
+        int currentShotsQuotaUsed = 0;
+        for(String thisTopic: currentShots.keySet()) {
+            Map<String, Integer> subtopicWiseShots = currentShots.get(thisTopic);
+            for(String thisSubtopic: subtopicWiseShots.keySet()) {
+                currentShotsQuotaUsed += subtopicWiseShots.get(thisSubtopic);
+            }
+        }
+
+        JsonElement weekSummaryEle = summaryObject.get("weekly");
+        JsonObject weekSummaryObject = (weekSummaryEle == null || weekSummaryEle.isJsonNull()) ? new JsonObject() : weekSummaryEle.getAsJsonObject();
+
+        String currentWeek = Commons.getInstance().getWeekstamp();
+        JsonElement weekArrayEle = weekSummaryObject.get(currentWeek);
+        JsonArray weekArray = (weekArrayEle == null || weekArrayEle.isJsonNull()) ? new JsonArray() : weekArrayEle.getAsJsonArray();
+        if (weekArray.size() > 1) {
+            weekArray.set(1, new JsonPrimitive(weekArray.get(0).getAsInt() + currentShotsQuotaUsed));
+        } else if (weekArray.size() > 0) {
+            weekArray.add(currentShotsQuotaUsed);
+        }
+        else if (weekArray.size() == 0) {
+            weekArray.add(0);
+            weekArray.add(currentShotsQuotaUsed);
+        }
     }
 
     @Override
@@ -146,12 +174,6 @@ public class UserActivityServiceImpl implements UserActivityService {
         userData.addProperty("terminationDate", System.currentTimeMillis());
         terminatedUsersPersist.set(userId, userData);
         userProfilesPersist.delete(userId);
-
-        JsonObject userTrendsData = userProfilesPersist.get(userId + "-trends");
-        if(userTrendsData != null) {
-            terminatedUsersPersist.set(userId + "-trends", userTrendsData);
-            userProfilesPersist.delete(userId + "-trends");
-        }
     }
 
     private void saveUserProfileDocument(String userId, JsonObject userDocument) {

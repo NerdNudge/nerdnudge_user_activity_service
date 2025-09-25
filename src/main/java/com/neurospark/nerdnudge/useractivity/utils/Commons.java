@@ -6,9 +6,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 import java.time.LocalDate;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.time.temporal.WeekFields;
+import java.util.*;
 
 public class Commons {
 
@@ -27,7 +26,7 @@ public class Commons {
         return instance;
     }
 
-    public void housekeepDayJsonObject(JsonObject jsonObject, int retentionEntries) {
+    public void housekeepJsonObjectEntries(JsonObject jsonObject, int retentionEntries) {
         Set<Map.Entry <String , JsonElement>> dailyQuotaKeys = jsonObject.entrySet();
         if(dailyQuotaKeys.size() <= retentionEntries)
             return;
@@ -73,6 +72,23 @@ public class Commons {
         String dayOfYearStr = String.format("%03d", dayOfYear);
         String yearStr = String.format("%02d", year);
         return dayOfYearStr + yearStr;
+    }
+
+    public String getWeekstamp() {
+        LocalDate now = LocalDate.now();
+        WeekFields weekFields = WeekFields.of(Locale.getDefault());
+        int weekOfYear = now.get(weekFields.weekOfYear());
+        int year = now.getYear();
+        return String.format("%04d%02d", year, weekOfYear); // e.g. 202538
+    }
+
+    public String getMonthStamp() {
+        LocalDate date = LocalDate.now();
+        int month = date.getMonthValue();
+        int year = date.getYear() % 100; // last two digits
+        String monthStr = String.format("%02d", month);
+        String yearStr = String.format("%02d", year);
+        return monthStr + yearStr;
     }
 
     public boolean arrayContains(JsonArray array, String value) {

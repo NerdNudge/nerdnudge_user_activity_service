@@ -41,7 +41,7 @@ public class DayQuotaService {
         JsonArray currentDayArray = getCurrentDayArray(dayQuotaObject);
         currentDayArray.set(0, new JsonPrimitive(currentDayArray.get(0).getAsInt() + currentQuizflexQuotaUsed));
 
-        Commons.getInstance().housekeepDayJsonObject(dayQuotaObject, quotaRetentionDays);
+        Commons.getInstance().housekeepJsonObjectEntries(dayQuotaObject, quotaRetentionDays);
         userData.add("dayQuota", dayQuotaObject);
     }
 
@@ -92,7 +92,7 @@ public class DayQuotaService {
         JsonArray currentDayArray = getCurrentDayArray(dayQuotaObject);
         currentDayArray.set(1, new JsonPrimitive(currentDayArray.get(1).getAsInt() + currentShotsQuotaUsed));
 
-        Commons.getInstance().housekeepDayJsonObject(dayQuotaObject, nerdConfig.get("dayQuotaRetentionDays").getAsInt());
+        Commons.getInstance().housekeepJsonObjectEntries(dayQuotaObject, nerdConfig.get("dayQuotaRetentionDays").getAsInt());
         userData.add("dayQuota", dayQuotaObject);
     }
 }
