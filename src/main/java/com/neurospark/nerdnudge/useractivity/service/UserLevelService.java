@@ -14,18 +14,15 @@ public class UserLevelService {
         if(!userQuizFlexSubmissionEntity.isLevelCompleted())
             return;
 
-        JsonElement topicwiseEle = userData.get("topicwise");
-        JsonObject topicwiseObject = (topicwiseEle == null || topicwiseEle.isJsonNull()) ? new JsonObject() : topicwiseEle.getAsJsonObject();
-        userData.add("topicwise", topicwiseObject);
-
-        JsonElement topicwiseOverallEle = topicwiseObject.get("overall");
-        JsonObject topicwiseOverallObject = (topicwiseOverallEle == null || topicwiseOverallEle.isJsonNull()) ? new JsonObject() : topicwiseOverallEle.getAsJsonObject();
-        topicwiseObject.add("overall", topicwiseOverallObject);
+        JsonObject topicwiseObject = userData.get("topicwise").getAsJsonObject();
+        JsonObject topicwiseOverallObject = topicwiseObject.get("overall").getAsJsonObject();
 
         String topic = getTopic(counts);
-        JsonElement topicEle = topicwiseOverallObject.get(UserActivityServiceImpl.topicNameToTopicCodeMapping.get(topic).getAsString());
+        String topicCode = UserActivityServiceImpl.topicNameToTopicCodeMapping.get(topic).getAsString();
+        log.info("Topic Code fetched: {}", topicCode);
+        JsonElement topicEle = topicwiseOverallObject.get(topicCode);
         JsonObject topicObject = (topicEle == null || topicEle.isJsonNull()) ? new JsonObject() : topicEle.getAsJsonObject();
-        topicwiseOverallObject.add(topic, topicObject);
+        topicwiseOverallObject.add(topicCode, topicObject);
 
         int currentTopicLevel = topicObject.has("level") ? topicObject.get("level").getAsInt() : 0;
         topicObject.addProperty("level", currentTopicLevel + 1);
@@ -63,7 +60,6 @@ public class UserLevelService {
         Map<String, Map<String, int[]>> subtopicCounts = counts.getSubtopicsCounts();
         Map<String, int[]> currentTopicSubtopics = subtopicCounts.get(topic);
         Iterator<Map.Entry<String, int[]>> subtopicsIterator = currentTopicSubtopics.entrySet().iterator();
-        log.info("topic name to topic mapping: {}", UserActivityServiceImpl.topicNameToTopicCodeMapping);
         while(subtopicsIterator.hasNext()) {
             String subtopic = subtopicsIterator.next().getKey();
             log.info("Subtopic: {}", subtopic);
