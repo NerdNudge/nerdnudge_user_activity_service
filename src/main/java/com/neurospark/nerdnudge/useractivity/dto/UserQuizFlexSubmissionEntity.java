@@ -20,5 +20,8 @@ public class UserQuizFlexSubmissionEntity {
     List<String> shares;
 
     @JsonProperty(defaultValue = "false")
-    boolean isRWC;
+    boolean levelCompleted;
+
+    @JsonProperty(defaultValue = "false")
+    boolean isRandom;
 }
